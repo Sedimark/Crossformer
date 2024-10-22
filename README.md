@@ -29,6 +29,7 @@ Surrey_AI/
 ├── broker.csv                      # data accessed from broker
 ├── cfg.json                        # configs
 ├── run.py                          # demo script
+├── setup.py                        # setup script
 ├── .gitignore                      # Git ignore file
 ├── README.md                       # project README file
 └── LICENSE                         # license
