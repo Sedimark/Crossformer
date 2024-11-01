@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "crossformer"
+version = "2024.0.1"
+dependencies = [
+  "torch",
+  "pytorch_lightning",
+  "einops",
+  "pandas",
+]
+requires-python = ">=3.8"
+authors = [
+  {name = "Dr. Peipei Wu", email = "peipeiwu@gmail.com"},
+]
+maintainers = [
+  {name = "Dr. Peipei Wu", email = "peipeiwu@gmail.com"},
+]
+description = "Crossfomrer for multivariate time series data analysis!"
+readme = "README.MD"
+license = {file = "LICENSE"}
+keywords = ["Deep Learning", "Transformer", "Multivariate Time-series Data Analysis", ]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [".]
