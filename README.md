@@ -28,6 +28,7 @@ Surrey_AI/
 │   │     ├── tools.py              # training tools
 ├── broker.csv                      # data accessed from broker
 ├── cfg.json                        # configs
+├── pyproject.toml                  # project dependencies
 ├── run.py                          # demo script
 ├── setup.py                        # setup script
 ├── .gitignore                      # Git ignore file
