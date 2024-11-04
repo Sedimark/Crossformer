@@ -5,17 +5,22 @@
 """
 import os
 import json
+import mlflow
+from pytorch_lightning.loggers import MLFlowLogger
 import pandas as pd
 import pytorch_lightning as pl
 from datetime import datetime
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
 from crossformer.utils.tools import CustomCallback
+import mlflow.pytorch
 
-
-
+# config loading
 with open('cfg.json') as f:
     cfg = json.load(f)
+ 
+# mlflow setting
+
 
 # data loading
 df = pd.read_csv(cfg['csv_path'])
