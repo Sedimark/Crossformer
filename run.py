@@ -20,7 +20,7 @@ with open('cfg.json') as f:
     cfg = json.load(f)
  
 # mlflow setting
-
+mlflow.pytorch.autolog()
 
 # data loading
 df = pd.read_csv(cfg['csv_path'])
