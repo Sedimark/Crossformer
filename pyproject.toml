@@ -10,7 +10,7 @@ dependencies = [
   "pytorch_lightning",
   "einops",
   "pandas",
-  "mlflow",
+  "mlflow"
 ]
 requires-python = ">=3.8"
 authors = [
@@ -20,7 +20,7 @@ maintainers = [
   {name = "Dr. Peipei Wu", email = "peipeiwu@gmail.com"},
 ]
 description = "Crossfomrer for multivariate time series data analysis!"
-readme = "README.MD"
+readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["Deep Learning", "Transformer", "Multivariate Time-series Data Analysis", ]
 classifiers = [
