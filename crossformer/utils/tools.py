@@ -6,6 +6,35 @@
 import os
 from pytorch_lightning.callbacks import Callback, ModelCheckpoint
 import torch
+import numpy as np
+
+def scaler(data:np.array):
+    """
+        Description: Scale the data to [-1, 1]
+        Args:
+            data: np.array, data to be scaled
+        Returns:
+            scale: np.array, the maximum abs value
+            base: np.array, scaled data
+    """
+    scale = np.max(np.absolute(data), axis=0)
+    base = data / scale
+    return scale, np.nan_to_num(base,copy=False)
+
+def custom_collate_fn(batch):
+        feat_batch = []
+        target_batch = []
+        annotation_batch = []
+
+        for item in batch:
+            feat_batch.append(torch.tensor(item['feat_data'], dtype=torch.float32))
+            target_batch.append(torch.tensor(item['target_data'], dtype=torch.float32))
+            annotation_batch.append(item['annotation'])
+
+        feat_batch = torch.stack(feat_batch)
+        target_batch = torch.stack(target_batch)
+
+        return feat_batch, target_batch, annotation_batch
 
 def adjust_learning_rate(lradj, epoch, lr):
     if lradj =='type1':

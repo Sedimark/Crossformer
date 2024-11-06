@@ -34,7 +34,7 @@ class Genera_Data(Dataset):
         chunk_num = len(self.values) // chunk_size
 
         self.chunks = {}
-        self._prep_chunk(self.values, chunk_size, chunk_num)
+        self._prep_chunk(chunk_size, chunk_num)
 
     def _prep_chunk(self, chunk_size, chunk_num):
         for i in range(chunk_num):
@@ -45,60 +45,6 @@ class Genera_Data(Dataset):
                 'scale': scale,
                 'target_data': chunk_data[-self.out_len:],
             }
-
-
-    def __len__(self):
-        return len(self.chunks)
-    
-    def __getitem__(self, idx):
-        return self.chunks[idx]
-
-class Genera_Data(Dataset):
-    """
-        *** For the general SEDIMAKR data use ***
-        SEDIMARK Data is structured in annotations (etc. data type, collumn name) and values. 
-        As this class is used for core wheels (or we also called core functions), we do only accept values as input.
-        Therefore, an external tool for linking annotations and values will be provided in future.
-    """
-    def __init__(self, df, 
-                 size=[24,24]):
-        """
-            Args:
-                df: pandas dataframe (values only)
-                size: list of two integers, [input_length, output_length]
-        """
-        super().__init__()
-        
-        self.values = df.to_numpy()
-        self.in_len, self.out_len = size
-
-        chunk_size = self.in_len + self.out_len
-        chunk_num = len(self.values) // chunk_size
-
-        self.chunks = {}
-        self._prep_chunk(self.values, chunk_size, chunk_num)
-
-    def _prep_chunk(self, chunk_size, chunk_num):
-        for i in range(chunk_num):
-            chunk_data = self.values[i*chunk_size:(i+1)*chunk_size,:]
-            scale, base = self._scaler(chunk_data[:self.in_len])
-            self.chunks[i] = {
-                'feat_data': base,
-                'scale': scale,
-                'target_data': chunk_data[-self.out_len:],
-            }
-
-    def _scaler(data,):
-        """
-            Scale all values into the range of [-1,1] using the following formula
-                -- scale:   the maximum absolute value of the data
-                -- base:    value / scale            
-            Args:
-                data: np.array
-        """
-        scale = np.max(np.abs(data),axis=0)
-        base = data / scale
-        return scale, base
 
     def __len__(self):
         return len(self.chunks)
@@ -149,21 +95,6 @@ class Data_Weather(Dataset):
     
     def __getitem__(self, idx):
         return self.chunks[idx]
-    
-def custom_collate_fn(batch):
-        feat_batch = []
-        target_batch = []
-        annotation_batch = []
-
-        for item in batch:
-            feat_batch.append(torch.tensor(item['feat_data'], dtype=torch.float32))
-            target_batch.append(torch.tensor(item['target_data'], dtype=torch.float32))
-            annotation_batch.append(item['annotation'])
-
-        feat_batch = torch.stack(feat_batch)
-        target_batch = torch.stack(target_batch)
-
-        return feat_batch, target_batch, annotation_batch
 
 class DataInterface(pl.LightningDataModule):
     def __init__(self, df, size=[24,24], split=[0.7,0.2,0.1],
@@ -178,22 +109,22 @@ class DataInterface(pl.LightningDataModule):
         pass 
 
     def setup(self, stage=None):
-        dataset = Data_Weather(self.df)
+        dataset = Genera_Data(self.df, size=self.size)
         self.train, self.val, self.test = random_split(dataset, self.split)
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, collate_fn=custom_collate_fn, shuffle=True)
+        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True)
     
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=self.batch_size, collate_fn=custom_collate_fn)
+        return DataLoader(self.val, batch_size=self.batch_size,)
     
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, collate_fn=custom_collate_fn)
+        return DataLoader(self.test, batch_size=self.batch_size,)
     
 if __name__ == "__main__":
     import pandas as pd
-    df = pd.read_csv('/home/paul/CODE/fl_crossformer/broker.csv')
-    data = DataInterface(df)
+    df = pd.read_csv('././all_weather_values.csv')
+    data = DataInterface(df, size=[2,2],batch_size=1)
     data.setup()
     train_loader = data.train_dataloader()
     for i, batch in enumerate(train_loader):
