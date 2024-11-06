@@ -17,7 +17,7 @@ from crossformer.utils.tools import CustomCallback
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 
-def cli_main(cfg):
+def cli_main():
     # data loading
     df = pd.read_csv(cfg['csv_path'])
     data = DataInterface(df, **cfg)
