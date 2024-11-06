@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader, random_split
 import pytorch_lightning as pl
+from crossformer.utils.tools import scaler
 
 class Genera_Data(Dataset):
     """
@@ -38,24 +39,13 @@ class Genera_Data(Dataset):
     def _prep_chunk(self, chunk_size, chunk_num):
         for i in range(chunk_num):
             chunk_data = self.values[i*chunk_size:(i+1)*chunk_size,:]
-            scale, base = self._scaler(chunk_data[:self.in_len])
+            scale, base = scaler(chunk_data[:self.in_len])
             self.chunks[i] = {
                 'feat_data': base,
                 'scale': scale,
                 'target_data': chunk_data[-self.out_len:],
             }
 
-    def _scaler(data,):
-        """
-            Scale all values into the range of [-1,1] using the following formula
-                -- scale:   the maximum absolute value of the data
-                -- base:    value / scale            
-            Args:
-                data: np.array
-        """
-        scale = np.max(np.abs(data),axis=0)
-        base = data / scale
-        return scale, base
 
     def __len__(self):
         return len(self.chunks)
@@ -149,7 +139,7 @@ class DataInterface(pl.LightningDataModule):
     
 if __name__ == "__main__":
     import pandas as pd
-    df = pd.read_csv('/home/paul/code/Surrey_AI/broker.csv')
+    df = pd.read_csv('././broker.csv')
     data = DataInterface(df)
     data.setup()
     train_loader = data.train_dataloader()
