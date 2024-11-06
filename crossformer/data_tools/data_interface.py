@@ -53,6 +53,59 @@ class Genera_Data(Dataset):
     def __getitem__(self, idx):
         return self.chunks[idx]
 
+class Genera_Data(Dataset):
+    """
+        *** For the general SEDIMAKR data use ***
+        SEDIMARK Data is structured in annotations (etc. data type, collumn name) and values. 
+        As this class is used for core wheels (or we also called core functions), we do only accept values as input.
+        Therefore, an external tool for linking annotations and values will be provided in future.
+    """
+    def __init__(self, df, 
+                 size=[24,24]):
+        """
+            Args:
+                df: pandas dataframe (values only)
+                size: list of two integers, [input_length, output_length]
+        """
+        super().__init__()
+        
+        self.values = df.to_numpy()
+        self.in_len, self.out_len = size
+
+        chunk_size = self.in_len + self.out_len
+        chunk_num = len(self.values) // chunk_size
+
+        self.chunks = {}
+        self._prep_chunk(self.values, chunk_size, chunk_num)
+
+    def _prep_chunk(self, chunk_size, chunk_num):
+        for i in range(chunk_num):
+            chunk_data = self.values[i*chunk_size:(i+1)*chunk_size,:]
+            scale, base = self._scaler(chunk_data[:self.in_len])
+            self.chunks[i] = {
+                'feat_data': base,
+                'scale': scale,
+                'target_data': chunk_data[-self.out_len:],
+            }
+
+    def _scaler(data,):
+        """
+            Scale all values into the range of [-1,1] using the following formula
+                -- scale:   the maximum absolute value of the data
+                -- base:    value / scale            
+            Args:
+                data: np.array
+        """
+        scale = np.max(np.abs(data),axis=0)
+        base = data / scale
+        return scale, base
+
+    def __len__(self):
+        return len(self.chunks)
+    
+    def __getitem__(self, idx):
+        return self.chunks[idx]
+
 class Data_Weather(Dataset):
     """
         For the SEDIMARK weather data use only
@@ -139,7 +192,7 @@ class DataInterface(pl.LightningDataModule):
     
 if __name__ == "__main__":
     import pandas as pd
-    df = pd.read_csv('././broker.csv')
+    df = pd.read_csv('/home/paul/CODE/fl_crossformer/broker.csv')
     data = DataInterface(df)
     data.setup()
     train_loader = data.train_dataloader()
