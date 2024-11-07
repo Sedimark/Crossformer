@@ -23,7 +23,7 @@ def scaler(data:np.array):
     return np.nan_to_num(scale,copy=False), np.nan_to_num(base,copy=False)
 
 model_ckpt = ModelCheckpoint(
-    dirpath = None,
+    dirpath = 'mlruns/models',
     filename = '{epoch}-{val_loss:.2f}',
     monitor = 'val_MAE',
     mode = 'min',

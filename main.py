@@ -41,7 +41,7 @@ def core():
     # mlflow
     mlflow_logger = MLFlowLogger(
                 experiment_name='mlflow_logger_test',
-                tracking_uri='http://127.0.0.1:8080'
+                tracking_uri='http://127.0.0.1:8080',
             )
     
     trainer = pl.Trainer(
