@@ -66,6 +66,12 @@ pip install -e .
 ## Demo
 The scrip **main.py** is used for demonstration. It provides the template of how to use the package - crossformer. Also, it displays the core function of the AI asset for model fitting and prediction.
 
+Assume that the environment has been activated, the UI platform for visualize AI model training is MLFlow. To turn on the mlflow server, please follow the command below, before you start your model's training.
+
+```bash
+mlflow server --host 127.0.0.1 --port 8080
+```
+
 
 
 
