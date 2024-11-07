@@ -59,7 +59,6 @@ class Crossformer(nn.Module):
 
         self.baseline = baseline
 
-        
         # Segment Number alculation
         self.in_seg_num = ceil(1.0 * in_len / seg_len)
         self.out_seg_num = ceil(1.0 * out_len / seg_len)
@@ -101,9 +100,9 @@ class Crossformer(nn.Module):
 class CrossFormer(pl.LightningModule):
     def __init__(self, cfg=None, learning_rate=1e-4, batch=32, **kwargs):
         super(CrossFormer, self).__init__()
+        self.save_hyperparameters()
 
         self.cfg = cfg
-
         # Create the model
         self.model = Crossformer(**cfg)
 
@@ -112,83 +111,44 @@ class CrossFormer(pl.LightningModule):
         self.learning_rate = learning_rate
         self.batch = batch
 
-        self.metricsCache = {
-            "mae":[],
-            "mse":[],
-            "rmse":[],
-            "mape":[],
-            "mspe":[],
-        }
-
     def forward(self, x):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        (x, y, anno) = batch
-        y_hat = self(x)
+        (x, scale, y) = batch
+        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
         loss = self.loss(y_hat, y)
-        self.log('train_loss', loss, prog_bar=True, logger=False)
-        return loss
+        self.log('train_loss', loss, prog_bar=True, logger=True)
+        return {'train_loss': loss} 
 
     def validation_step(self, batch, batch_idx):
-        (x, y, anno) = batch
-        y_hat = self(x)
+        (x, scale, y) = batch
+        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
         [mae,mse,rmse,mape,mspe] = metric(y_hat, y)
-        self.metricsCache["mae"].append(mae)
-        self.metricsCache["mse"].append(mse)
-        self.metricsCache["rmse"].append(rmse)
-        self.metricsCache["mape"].append(mape)
-        self.metricsCache["mspe"].append(mspe)
-
-    def on_validation_epoch_end(self,):
-        [mae,mse,rmse,mape,mspe] = self._cal_avg_metrics()
-        self.log('val_mae', mae, prog_bar=True, logger=True)
-        self.log('val_mse', mse, prog_bar=True, logger=True)
-        self.log('val_rmse', rmse, prog_bar=True, logger=True)
-        self.log('val_mape', mape, prog_bar=True, logger=True)
-        self.log('val_mspe', mspe, prog_bar=True, logger=True)
-        self.metricsCache = {
-            "mae":[],
-            "mse":[],
-            "rmse":[],
-            "mape":[],
-            "mspe":[],
-        }
+        self.log('val_mae', mae, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('val_mse', mse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('val_rmse', rmse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('val_mape', mape, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('val_mspe', mspe, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        return {'val_mae': mae, 'val_mse': mse, 'val_rmse': rmse, 'val_mape': mape, 'val_mspe': mspe}       
 
     def test_step(self, batch, batch_idx):
-        (x, y, anno) = batch
-        y_hat = self(x)
+        (x, scale, y) = batch
+        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
         [mae,mse,rmse,mape,mspe] = metric(y_hat, y)
-        self.metricsCache["mae"].append(mae)
-        self.metricsCache["mse"].append(mse)
-        self.metricsCache["rmse"].append(rmse)
-        self.metricsCache["mape"].append(mape)
-        self.metricsCache["mspe"].append(mspe)
-
-    def on_test_epoch_end(self,):
-        [mae,mse,rmse,mape,mspe] = self._cal_avg_metrics()
-        self.log('test_mae', mae)
-        self.log('test_mse', mse)
-        self.log('test_rmse', rmse)
-        self.log('test_mape', mape)
-        self.log('test_mspe', mspe)
-        self.metricsCache = {
-            "mae":[],
-            "mse":[],
-            "rmse":[],
-            "mape":[],
-            "mspe":[],
-        }
+        self.log('test_mae', mae, prog_bar=True, logger=True,  on_step=True, on_epoch=True)
+        self.log('test_mse', mse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('test_rmse', rmse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('test_mape', mape, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        self.log('test_mspe', mspe, prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        return {'val_mae': mae, 'val_mse': mse, 'val_rmse': rmse, 'val_mape': mape, 'val_mspe': mspe}
+    
+    def predict_step(self, batch, *args: torch.Any, **kwargs: torch.Any) -> torch.Any:
+        (x, scale, y) = batch
+        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
+        return y_hat
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
         return optimizer
-    
-    def _cal_avg_metrics(self):
-        mae = sum(self.metricsCache["mae"]) / len(self.metricsCache["mae"])
-        mse = sum(self.metricsCache["mse"]) / len(self.metricsCache["mse"])
-        rmse = sum(self.metricsCache["rmse"]) / len(self.metricsCache["rmse"])
-        mape = sum(self.metricsCache["mape"]) / len(self.metricsCache["mape"])
-        mspe = sum(self.metricsCache["mspe"]) / len(self.metricsCache["mspe"])
-        return [mae, mse, rmse, mape, mspe]
