@@ -57,6 +57,12 @@ def core():
 
     trainer.fit(model, data)
 
+    # load the best model
+    model = CrossFormer.load_from_checkpoint('mlruns/models/best_model.ckpt')
+    test_result = trainer.test(model, data)
+    print(test_result)
+
+
 
 if __name__ == "__main__":
     core()

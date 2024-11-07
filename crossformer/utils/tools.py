@@ -24,16 +24,16 @@ def scaler(data:np.array):
 
 model_ckpt = ModelCheckpoint(
     dirpath = 'mlruns/models',
-    filename = '{epoch}-{val_loss:.2f}',
+    filename = 'best_model', #'{epoch}-{val_loss:.2f}',
     monitor = 'val_MAE',
     mode = 'min',
-    save_top_k = 3,
+    save_top_k = 1,
     save_weights_only=False,
 
 )
 
 early_stop = EarlyStopping(
     monitor = 'val_MAE',
-    patience = 10,
+    patience = 20,
     mode = 'min',
 )
