@@ -13,7 +13,7 @@ from pytorch_lightning.cli import LightningCLI
 from datetime import datetime
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
-from crossformer.utils.tools import CustomCallback
+from crossformer.utils.tools import CustomCallback, model_ckpt, early_stop
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 
@@ -25,30 +25,26 @@ def cli_main():
     # model loading
     model = CrossFormer(cfg)
 
-    # callbacks
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10, mode='min')
-    checkpoint_callback = ModelCheckpoint(dirpath=os.getcwd(), save_top_k=1, monitor='val_loss', mode='min')
-
     # cli object
     cli = LightningCLI(
         model_class=model,
         datamodule_class=data,
         run=False,
         trainer_defaults={
-            "callbacks":[early_stopping, checkpoint_callback]
+            "callbacks":[model_ckpt, early_stop],
         }
     )
 
     if cli.trainer.global_rank==0:
         mlflow.pytorch.autolog()    
-    cli.trainer.fit(cli.model,datamodule=cli.datamodule)
-    cli.trainer.test(cli.model, cli.datamodule)
+    # cli.trainer.fit(cli.model,datamodule=cli.datamodule)
+    # cli.trainer.test(cli.model, cli.datamodule)
 
 if __name__ == "__main__":
     # config loading
     with open('cfg.json') as f:
         cfg = json.load(f)
-    cli_main(cfg)
+    cli_main()
 
 
 

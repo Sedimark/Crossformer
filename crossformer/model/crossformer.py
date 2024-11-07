@@ -124,24 +124,20 @@ class CrossFormer(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         (x, scale, y) = batch
         y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
-        [mae,mse,rmse,mape,mspe] = metric(y_hat, y)
-        self.log('val_mae', mae, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('val_mse', mse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('val_rmse', rmse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('val_mape', mape, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('val_mspe', mspe, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        return {'val_mae': mae, 'val_mse': mse, 'val_rmse': rmse, 'val_mape': mape, 'val_mspe': mspe}       
+        metrics = metric(y_hat, y)
+        for key in metrics.keys():
+            metrics[f'val_{key}'] = metrics.pop(key)
+        self.log_dict(metrics, prog_bar=True, logger=True)
+        return metrics       
 
     def test_step(self, batch, batch_idx):
         (x, scale, y) = batch
         y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
-        [mae,mse,rmse,mape,mspe] = metric(y_hat, y)
-        self.log('test_mae', mae, prog_bar=True, logger=True,  on_step=True, on_epoch=True)
-        self.log('test_mse', mse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('test_rmse', rmse, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('test_mape', mape, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        self.log('test_mspe', mspe, prog_bar=True, logger=True, on_step=True, on_epoch=True)
-        return {'val_mae': mae, 'val_mse': mse, 'val_rmse': rmse, 'val_mape': mape, 'val_mspe': mspe}
+        metrics = metric(y_hat, y)
+        for key in metrics.keys():
+            metrics[f'test_{key}'] = metrics.pop(key)
+        self.log_dict(metrics, prog_bar=True, logger=True)
+        return metrics
     
     def predict_step(self, batch, *args: torch.Any, **kwargs: torch.Any) -> torch.Any:
         (x, scale, y) = batch

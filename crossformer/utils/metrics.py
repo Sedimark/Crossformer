@@ -36,4 +36,4 @@ def metric(pred, true):
     mape = MAPE(pred, true)
     mspe = MSPE(pred, true)
     
-    return mae, mse, rmse, mape, mspe
+    return {'MAE': mae, 'MSE': mse, 'RMSE': rmse, 'MAPE': mape, 'MSPE':mspe}

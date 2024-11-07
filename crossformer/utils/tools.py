@@ -4,7 +4,7 @@
     Maintainer: Peipei Wu (Paul) - Surrey
 """
 import os
-from pytorch_lightning.callbacks import Callback, ModelCheckpoint
+from pytorch_lightning.callbacks import Callback, ModelCheckpoint, EarlyStopping
 import torch
 import numpy as np
 
@@ -19,22 +19,24 @@ def scaler(data:np.array):
     """
     scale = np.max(np.absolute(data), axis=0)
     base = data / scale
-    return scale, np.nan_to_num(base,copy=False)
+    return np.nan_to_num(scale,copy=False), np.nan_to_num(base,copy=False)
 
-def custom_collate_fn(batch):
-        feat_batch = []
-        target_batch = []
-        annotation_batch = []
+model_ckpt = ModelCheckpoint(
+    dirpath = None,
+    filename = '{epoch}-{val_loss:.2f}',
+    monitor = 'val_MAE',
+    mode = 'min',
+    save_top_k = 3,
+    save_weights_only=False,
 
-        for item in batch:
-            feat_batch.append(torch.tensor(item['feat_data'], dtype=torch.float32))
-            target_batch.append(torch.tensor(item['target_data'], dtype=torch.float32))
-            annotation_batch.append(item['annotation'])
+)
 
-        feat_batch = torch.stack(feat_batch)
-        target_batch = torch.stack(target_batch)
+early_stop = EarlyStopping(
+    monitor = 'val_MAE',
+    patience = 10,
+    mode = 'min',
+)
 
-        return feat_batch, target_batch, annotation_batch
 
 def adjust_learning_rate(lradj, epoch, lr):
     if lradj =='type1':
