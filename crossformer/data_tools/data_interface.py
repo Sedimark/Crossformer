@@ -51,7 +51,7 @@ class Genera_Data(Dataset):
         return len(self.chunks)
     
     def __getitem__(self, idx):
-        return self.chunks[idx]
+        return torch.tensor(self.chunks[idx]['feat_data'], dtype=torch.float32), torch.tensor(self.chunks[idx]['scale'], dtype=torch.float32), torch.tensor(self.chunks[idx]['target_data'], dtype=torch.float32)
 
 class Data_Weather(Dataset):
     """

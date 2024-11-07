@@ -116,26 +116,24 @@ class CrossFormer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         (x, scale, y) = batch
-        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
+        y_hat = self(x) * scale.unsqueeze(1) 
         loss = self.loss(y_hat, y)
         self.log('train_loss', loss, prog_bar=True, logger=True)
-        return {'train_loss': loss} 
+        return {'loss': loss} 
 
     def validation_step(self, batch, batch_idx):
         (x, scale, y) = batch
-        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
+        y_hat = self(x) * scale.unsqueeze(1) 
         metrics = metric(y_hat, y)
-        for key in metrics.keys():
-            metrics[f'val_{key}'] = metrics.pop(key)
+        metrics = {f'val_{key}': value for key, value in metrics.items()}
         self.log_dict(metrics, prog_bar=True, logger=True)
         return metrics       
 
     def test_step(self, batch, batch_idx):
         (x, scale, y) = batch
-        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
+        y_hat = self(x) * scale.unsqueeze(1) 
         metrics = metric(y_hat, y)
-        for key in metrics.keys():
-            metrics[f'test_{key}'] = metrics.pop(key)
+        metrics = {f'test_{key}': value for key, value in metrics.items()}
         self.log_dict(metrics, prog_bar=True, logger=True)
         return metrics
     
