@@ -38,3 +38,12 @@ ENV/
 
 lightning_logs/
 results/
+
+# Logger & Logs
+wandb/
+mlruns/
+logs/
+*.log
+*.log.*
+*.log-*
+*.log/*
