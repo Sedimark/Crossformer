@@ -13,69 +13,31 @@ from pytorch_lightning.cli import LightningCLI
 from datetime import datetime
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
-from crossformer.utils.tools import CustomCallback, model_ckpt, early_stop
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from crossformer.utils.tools import model_ckpt, early_stop
 
+#  cli functions
+"""
+    CLi functions is waiting for the implementation in the future
+"""
 
-def cli_main():
-    # data loading
-    df = pd.read_csv(cfg['csv_path'])
-    data = DataInterface(df, **cfg)
-    
-    # model loading
-    model = CrossFormer(cfg)
-
-    # cli object
-    cli = LightningCLI(
-        model_class=model,
-        datamodule_class=data,
-        run=False,
-        trainer_defaults={
-            "callbacks":[model_ckpt, early_stop],
-        }
-    )
-
-    if cli.trainer.global_rank==0:
-        mlflow.pytorch.autolog()    
-    # cli.trainer.fit(cli.model,datamodule=cli.datamodule)
-    # cli.trainer.test(cli.model, cli.datamodule)
-
-if __name__ == "__main__":
+# core_wheel
+"""
+    Core function for the AI asset
+"""
+def core():
     # config loading
     with open('cfg.json') as f:
         cfg = json.load(f)
-    cli_main()
+    print(cfg)
 
+    # model initialization
+    model = CrossFormer(cfg)
+    print(model)
 
-
-# callbacks
-# unique_run_dir = os.path.join(cfg.get("save_path"), datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-# mycallback = CustomCallback(path=unique_run_dir,**cfg)
-
-# # seed
-# pl.seed_everything(cfg['seed'])
-
-# # load pretrained model if applicable
-# if cfg.get("pretrained_model"):
-#     model = CrossFormer.load_from_checkpoint(cfg['pretrained_model'])
-
-# # trainer
-# trainer = pl.Trainer(
-#     accelerator=cfg['accelerator'],
-#     precision=cfg['precision'],
-#     min_epochs=cfg['min_epochs'],
-#     max_epochs=cfg['max_epochs'],
-#     check_val_every_n_epoch=1,
-#     callbacks=[mycallback],
-#     fast_dev_run=False,
-# )
-
-# # training
-# trainer.fit(model, data)
-
-# # testing
-# saved_path = unique_run_dir +'/' + cfg.get('filename') +'.ckpt'
-# trained_model = CrossFormer.load_from_checkpoint(saved_path,cfg=cfg)
-# test_result = trainer.test(trained_model, data)
-# print(test_result)
-
+    # data loading
+    df = pd.read_csv(cfg['csv_path'])
+    data = DataInterface(cfg)
+    print(data)
+    
+if __name__ == "__main__":
+    core()

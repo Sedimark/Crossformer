@@ -21,7 +21,5 @@
     "min_epochs": 10,
     "max_epochs": 200,
     "precision": 32,
-    "patience": 15,
-    "save_path": "./results",
-    "filename": "best_model"
+    "patience": 15
 }

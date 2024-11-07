@@ -19,7 +19,8 @@ class Genera_Data(Dataset):
         Therefore, an external tool for linking annotations and values will be provided in future.
     """
     def __init__(self, df, 
-                 size=[24,24]):
+                 size=[24,24],
+                 **kwargs):
         """
             Args:
                 df: pandas dataframe (values only)
