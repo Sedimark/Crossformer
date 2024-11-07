@@ -26,10 +26,14 @@ Surrey_AI/
 │   │     ├── __init__.py
 │   │     ├── metrics.py    
 │   │     ├── tools.py              # training tools
-├── broker.csv                      # data accessed from broker
+├── crossformer
+│   ├── all_weather_values.csv      # all weather data (values-only)
+│   ├── broker_values.csv           # part data accessed from broker (values only)
+│   ├── broker.csv                  # part data accessed from broker
+│   ├── WeatherInforamtion.csv      # all data accessed from broker
 ├── cfg.json                        # configs
 ├── pyproject.toml                  # project dependencies
-├── run.py                          # demo script
+├── main.py                         # The main file
 ├── setup.py                        # setup script
 ├── .gitignore                      # Git ignore file
 ├── README.md                       # project README file
@@ -60,6 +64,8 @@ pip install -e .
 ```
 
 ## Demo
-The scrip **run.py** is used for demonstration. It provides the template of how to use the package - crossformer.
+The scrip **main.py** is used for demonstration. It provides the template of how to use the package - crossformer. Also, it displays the core function of the AI asset for model fitting and prediction.
+
+
 
 

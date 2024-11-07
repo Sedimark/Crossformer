@@ -24,45 +24,9 @@ from crossformer.utils.tools import model_ckpt, early_stop
 
 # core_wheel
 """
-    Core function for the AI asset
+    Core wheel is the core function for the AI asset
 """
-def core():
-    # config loading
-    with open('cfg.json') as f:
-        cfg = json.load(f)
-
-    # model initialization
-    model = CrossFormer(cfg)
-    
-    # data loading
-    df = pd.read_csv(cfg['csv_path'])
-    data = DataInterface(df, **cfg)
-    
-    # mlflow
-    mlflow_logger = MLFlowLogger(
-                experiment_name='mlflow_logger_test',
-                tracking_uri='http://127.0.0.1:8080',
-            )
-    
-    trainer = pl.Trainer(
-        accelerator=cfg['accelerator'],
-        precision=cfg['precision'],
-        min_epochs=cfg['min_epochs'],
-        max_epochs=cfg['max_epochs'],
-        check_val_every_n_epoch=1,
-        fast_dev_run=False,
-        callbacks=[model_ckpt, early_stop],
-        logger=mlflow_logger
-    )
-
-    trainer.fit(model, data)
-
-    # load the best model
-    model = CrossFormer.load_from_checkpoint('mlruns/models/best_model.ckpt')
-    test_result = trainer.test(model, data)
-    print(test_result)
-
-def Core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
+def core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
     """
         Core function for the AI asset
         Args:
@@ -112,5 +76,5 @@ def Core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
 if __name__ == "__main__":
     with open('cfg.json') as f:
         cfg = json.load(f)
-    result = Core(pd.read_csv(cfg['csv_path']), cfg, 'predict')
+    result = core(pd.read_csv(cfg['csv_path']), cfg, 'predict')
     print(result)
