@@ -62,7 +62,55 @@ def core():
     test_result = trainer.test(model, data)
     print(test_result)
 
+def Core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
+    """
+        Core function for the AI asset
+        Args:
+            df: pd.DataFrame, the input data
+            cfg: dict, the config file
+            flag: str, the flag for the function ('fit', or 'predict')
+    """
+    # mlflow
+    mlflow_logger = MLFlowLogger(
+                experiment_name='mlflow_logger_test',
+                tracking_uri='http://127.0.0.1:8080',
+            )
+    
+    # data loading
+    if flag == 'predict':
+        cfg['split'] = [0, 0, 1]
+        # load the best model
+        model = CrossFormer.load_from_checkpoint('mlruns/models/best_model.ckpt')
+    else:
+        model = CrossFormer(cfg)
+    data = DataInterface(df, **cfg)
 
+    # trainer
+    trainer = pl.Trainer(
+        accelerator=cfg['accelerator'],
+        precision=cfg['precision'],
+        min_epochs=cfg['min_epochs'],
+        max_epochs=cfg['max_epochs'],
+        check_val_every_n_epoch=1,
+        fast_dev_run=False,
+        callbacks=[model_ckpt, early_stop],
+        logger=mlflow_logger
+    )
+
+    if flag == 'fit':
+        trainer.fit(model, data)
+        test_result = trainer.test(model, data)
+        return test_result
+    elif flag == 'predict':
+        return trainer.predict(model, data)
+    else:
+        print('Please specify the flag as "fit" or "predict"')
+            
+    
+    
 
 if __name__ == "__main__":
-    core()
+    with open('cfg.json') as f:
+        cfg = json.load(f)
+    result = Core(pd.read_csv(cfg['csv_path']), cfg, 'predict')
+    print(result)

@@ -118,7 +118,7 @@ class CrossFormer(pl.LightningModule):
         (x, scale, y) = batch
         y_hat = self(x) * scale.unsqueeze(1) 
         loss = self.loss(y_hat, y)
-        self.log('train_loss', loss, prog_bar=True, logger=True)
+        self.log('train_loss', loss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
         return {'loss': loss} 
 
     def validation_step(self, batch, batch_idx):
@@ -126,7 +126,7 @@ class CrossFormer(pl.LightningModule):
         y_hat = self(x) * scale.unsqueeze(1) 
         metrics = metric(y_hat, y)
         metrics = {f'val_{key}': value for key, value in metrics.items()}
-        self.log_dict(metrics, prog_bar=True, logger=True)
+        self.log_dict(metrics, prog_bar=True, logger=True, on_step=True, on_epoch=True)
         return metrics       
 
     def test_step(self, batch, batch_idx):
@@ -134,12 +134,12 @@ class CrossFormer(pl.LightningModule):
         y_hat = self(x) * scale.unsqueeze(1) 
         metrics = metric(y_hat, y)
         metrics = {f'test_{key}': value for key, value in metrics.items()}
-        self.log_dict(metrics, prog_bar=True, logger=True)
+        self.log_dict(metrics, prog_bar=True, logger=True, on_step=True, on_epoch=True)
         return metrics
     
     def predict_step(self, batch, *args: torch.Any, **kwargs: torch.Any) -> torch.Any:
         (x, scale, y) = batch
-        y_hat = self(x) * scale # scale the output (but not correct), need to be fixed
+        y_hat = self(x) * scale.unsqueeze(1) 
         return y_hat
 
     def configure_optimizers(self):

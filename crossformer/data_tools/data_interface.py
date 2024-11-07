@@ -110,8 +110,13 @@ class DataInterface(pl.LightningDataModule):
         pass 
 
     def setup(self, stage=None):
-        dataset = Genera_Data(self.df, size=self.size)
-        self.train, self.val, self.test = random_split(dataset, self.split)
+
+        if stage == 'fit' or stage is None:
+            dataset = Genera_Data(self.df, size=self.size)
+            self.train, self.val, self.test = random_split(dataset, self.split)
+
+        if stage == 'predict':
+            self.predict = Genera_Data(self.df, size=self.size)
 
     def train_dataloader(self):
         return DataLoader(self.train, batch_size=self.batch_size, shuffle=True)
@@ -121,6 +126,9 @@ class DataInterface(pl.LightningDataModule):
     
     def test_dataloader(self):
         return DataLoader(self.test, batch_size=self.batch_size,)
+    
+    def predict_dataloader(self):
+        return DataLoader(self.predict, batch_size=self.batch_size,)
     
 if __name__ == "__main__":
     import pandas as pd
