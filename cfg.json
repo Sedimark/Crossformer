@@ -11,7 +11,7 @@
     "layer_num": 3,
     "dropout": 0.2,
     "baseline": false,
-    "learning_rate": 0.001,
+    "learning_rate": 0.1,
     "batch_size": 8,
     "csv_path": "data/broker_values.csv",
     "size": [24, 24],

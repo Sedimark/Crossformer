@@ -34,10 +34,13 @@ def core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
             cfg: dict, the config file
             flag: str, the flag for the function ('fit', or 'predict')
     """
-    # mlflow
+
+    torch.set_float32_matmul_precision('medium')
+
+    # mlflowclea
     mlflow_logger = MLFlowLogger(
                 experiment_name='mlflow_logger_test',
-                tracking_uri='http://127.0.0.1:8080',
+                tracking_uri='http://localhost:5000',
             )
     
     # data loading
@@ -76,5 +79,5 @@ def core(df:pd.DataFrame, cfg: dict, flag: str = 'fit'):
 if __name__ == "__main__":
     with open('cfg.json') as f:
         cfg = json.load(f)
-    result = core(pd.read_csv(cfg['csv_path']), cfg, 'predict')
+    result = core(pd.read_csv(cfg['csv_path']), cfg, 'fit')
     print(result)

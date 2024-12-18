@@ -7,7 +7,7 @@
 import torch
 import numpy as np
 import pandas as pd
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
 import pytorch_lightning as pl
 from crossformer.utils.tools import scaler
 
@@ -113,7 +113,12 @@ class DataInterface(pl.LightningDataModule):
 
         if stage == 'fit' or stage is None:
             dataset = Genera_Data(self.df, size=self.size)
-            self.train, self.val, self.test = random_split(dataset, self.split)
+            # self.train, self.val, self.test = random_split(dataset, self.split)
+            # based on time
+            train_num , test_num = int(dataset.__len__()*self.split[0]), int(dataset.__len__()*self.split[2])
+            val_num = dataset.__len__() - train_num - test_num
+            train_index, val_index, test_index = list(range(0, train_num)), list(range(train_num, train_num + val_num)), list(range(train_num + val_num, dataset.__len__()))
+            self.train, self.val, self.test = Subset(dataset=dataset, indices=train_index), Subset(dataset=dataset, indices=val_index), Subset(dataset=dataset, indices=test_index)
 
         if stage == 'predict':
             self.predict = Genera_Data(self.df, size=self.size)
