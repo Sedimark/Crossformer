@@ -30,3 +30,7 @@ classifiers = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+
+[tool.pyink]
+line-length = 80
+skip-string-normalization = true

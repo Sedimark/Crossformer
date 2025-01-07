@@ -47,3 +47,12 @@ logs/
 *.log.*
 *.log-*
 *.log/*
+
+# code check
+*.flake8
+.flake8
+.mypy_cache/
+.pyre/
+.pytype/
+./pylint.d/
+.cache/
