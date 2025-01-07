@@ -72,6 +72,8 @@ Assume that the environment has been activated, the UI platform for visualize AI
 mlflow server --host 127.0.0.1 --port 8080
 ```
 
+After starting the mlflow, you can run the demo using **main.py**.  
+
 
 
 
