@@ -7,7 +7,7 @@ Maintainer: Peipei Wu (Paul) - Surrey
 """
 
 import json
-import mlflow.cli
+# import mlflow.cli
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
 from crossformer.utils.tools import early_stop, model_ckpt
@@ -39,7 +39,7 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
     torch.set_float32_matmul_precision("medium")
 
     # mlflow logger
-    mlflow.cli.server()  # start the mlflow server
+    # mlflow.cli.server()  # start the mlflow server
     mlflow_logger = MLFlowLogger(
         experiment_name="mlflow_logger_test",
         tracking_uri="http://localhost:5000",
