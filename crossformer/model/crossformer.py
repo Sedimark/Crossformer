@@ -248,9 +248,7 @@ class CrossFormer(pl.LightningModule):
         )
         return metrics
 
-    def predict_step(
-        self, batch, *args: torch.Any, **kwargs: torch.Any
-    ) -> torch.Any:
+    def predict_step(self, batch, *args, **kwargs):
         """Predict step.
 
         Forward pass and return predictions.
