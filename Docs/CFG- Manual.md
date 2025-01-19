@@ -1,1 +1,28 @@
 This is the manual of the CFG.
+
+
+{
+    "data_dim": 5, the dimension
+    "in_len": 24,
+    "out_len": 24,
+    "seg_len": 2,
+    "window_size": 4,
+    "factor": 10,
+    "model_dim": 256,
+    "feedforward_dim": 512,
+    "head_num": 4,
+    "layer_num": 3,
+    "dropout": 0.2,
+    "baseline": false,
+    "learning_rate": 0.1,
+    "batch_size": 8,
+    "csv_path": "data/broker_values.csv",
+    "size": [24, 24],
+    "split": [0.7,0.2,0.1],
+    "seed": 2024,
+    "accelerator": "auto",
+    "min_epochs": 10,
+    "max_epochs": 200,
+    "precision": 32,
+    "patience": 15
+}
