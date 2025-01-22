@@ -7,7 +7,7 @@ name = "crossformer"
 version = "2024.0.1"
 dependencies = [
   "torch",
-  "pytorch_lightning",
+  "lightning",
   "einops",
   "pandas",
   "mlflow"

@@ -12,8 +12,8 @@ from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
 from crossformer.utils.tools import early_stop, model_ckpt
 import pandas as pd
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import MLFlowLogger
+from lightning.pytorch import Trainer
+from lightning.pytorch.loggers import MLFlowLogger
 import torch
 # from pytorch_lightning.cli import LightningCLI
 
@@ -57,7 +57,7 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
     data = DataInterface(df, **cfg)
 
     # trainer
-    trainer = pl.Trainer(
+    trainer = Trainer(
         accelerator=cfg["accelerator"],
         precision=cfg["precision"],
         min_epochs=cfg["min_epochs"],

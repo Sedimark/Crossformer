@@ -1,10 +1,83 @@
 """Metrics.
 
+In this script, the metrics and designed loss functions are provided.
 Author: Peipei Wu (Paul) - Surrey
 Maintainer: Peipei Wu (Paul) - Surrey
 """
 
 import torch
+
+
+def scaled_mse(pred, true, scale_factor, epsilon=1e-6):
+    """Computes the scaled MSE loss.
+
+    Args:
+        pred (torch.Tensor): Predictions.
+        true (torch.Tensor): Ground truth.
+        scaled_factor (torch.Tensor): Scaled range.
+        epsilon (float): Constant for avoid division by zero.
+                         Defaults to 1e-6.
+
+    Returns:
+        torch.Tensor: Scaled MSE
+    """
+    diff = true - pred
+    scaled_diff = diff**2 / (scale_factor**2 + epsilon)
+    return torch.mean(scaled_diff)
+
+
+def normalized_mse(pred, true, epsilon=1e-6):
+    """Computes the normalized MSE loss.
+
+    Args:
+        pred (torch.Tensor): Predictions.
+        true (torch.Tensor): Ground truths.
+        epsilon (float): Constant for avoid division by zero.
+                         Defaults to 1e-6.
+
+     Returns:
+        torch.Tensor: Normalized MSE
+    """
+    diff = true - pred
+    norm_factors = torch.max(true, dim=-1) - torch.min(true, dim=-1)
+    norm_diff = diff**2 / (norm_factors**2 + epsilon)
+    return torch.mean(norm_diff)
+
+
+def scaled_log_cosh(pred, true, scaled_factor, epsilon=1e-6):
+    """_summary_
+
+    Args:
+        pred (torch.Tensor): Predictions.
+        true (torch.Tensor): Ground truths.
+        scaled_factor (torch.Tensor): Scaled range.
+        epsilon (float): Constant for avoid division by zero.
+                          Defaults to 1e-6.
+
+     Returns:
+        torch.Tensor: Scaled Log Cosh
+    """
+    diff = true - pred
+    scaled_log_cosh = torch.log(torch.cosh(diff)) / (scaled_factor + epsilon)
+    return torch.mean(scaled_log_cosh)
+
+
+def hybrid_loss(pred, true, alpha=0.5):
+    """Computes hybrid loss.
+
+    alpha controls the scale & (1 - alpha) controls outlier robustness
+    Args:
+        pred (torch.Tensor): Predictions.
+        true (torch.Tensor): Ground truths.
+        alpha (float): Scale sensitive. Defaults to 0.5.
+
+     Returns:
+        torch.Tensor: Hybrid loss
+    """
+    scaled_factor = torch.amax(true, dim=(0, 1)) - torch.amin(true, dim=(0, 1))
+    scale_mse = scaled_mse(pred, true, scaled_factor)
+    scale_log_cosh = scaled_log_cosh(pred, true, scaled_factor)
+    return alpha * scale_mse + (1 - alpha) * scale_log_cosh
 
 
 def rse(pred, true):

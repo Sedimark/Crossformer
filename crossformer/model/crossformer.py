@@ -7,14 +7,14 @@
 """
 
 from math import ceil
-import pytorch_lightning as pl
+from lightning.pytorch import LightningModule
 import torch
 import torch.nn as nn
 from einops import repeat
 from crossformer.model.layers.encoder import Encoder
 from crossformer.model.layers.decoder import Decoder
 from crossformer.model.layers.embedding import ValueEmebedding
-from crossformer.utils.metrics import metric
+from crossformer.utils.metrics import metric, hybrid_loss
 
 
 class Crossformer(nn.Module):
@@ -152,10 +152,10 @@ class Crossformer(nn.Module):
         return base + predict_y[:, : self.out_len, :]
 
 
-class CrossFormer(pl.LightningModule):
+class CrossFormer(LightningModule):
     """CrossFormer
 
-    The implementation based on Pytorch Lightning with the engineering code.
+    The implementation based on Lightning with the engineering code.
     """
 
     def __init__(self, cfg=None, learning_rate=1e-4, batch=32, **kwargs):
@@ -174,7 +174,8 @@ class CrossFormer(pl.LightningModule):
         self.model = Crossformer(**cfg)
 
         # Training Parameters
-        self.loss = nn.MSELoss()
+        # self.loss = nn.MSELoss()
+        self.loss = hybrid_loss
         self.learning_rate = learning_rate
         self.batch = batch
 
@@ -194,16 +195,12 @@ class CrossFormer(pl.LightningModule):
             (dict): logging the loss.
         """
         (x, scale, y) = batch
-        y_hat = self(x) * scale.unsqueeze(1)
+        if scale._is_zerotensor():
+            y_hat = self(x) * scale.unsqueeze(1)
+        else:
+            y_hat = self(x)
         loss = self.loss(y_hat, y)
-        self.log(
-            'train_loss',
-            loss,
-            prog_bar=True,
-            logger=True,
-            on_step=True,
-            on_epoch=True,
-        )
+        self.logger.experiment.log_metric(key='train_loss', value=loss)
         return {'loss': loss}
 
     def validation_step(self, batch, batch_idx):
@@ -219,7 +216,10 @@ class CrossFormer(pl.LightningModule):
             dict: Validation metrics.
         """
         (x, scale, y) = batch
-        y_hat = self(x) * scale.unsqueeze(1)
+        if scale._is_zerotensor():
+            y_hat = self(x) * scale.unsqueeze(1)
+        else:
+            y_hat = self(x)
         metrics = metric(y_hat, y)
         metrics = {f'val_{key}': value for key, value in metrics.items()}
         self.log_dict(

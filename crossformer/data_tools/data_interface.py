@@ -8,11 +8,11 @@
 
 import torch
 from torch.utils.data import Dataset, DataLoader, Subset
-import pytorch_lightning as pl
+from lightning.pytorch import LightningDataModule
 from crossformer.utils.tools import scaler
 
 
-class Genera_Data(Dataset):
+class General_Data(Dataset):
     """
     *** For the general SEDIMARK data use ***
     SEDIMARK Data is structured in annotations (etc. data type, collumn name)
@@ -40,16 +40,24 @@ class Genera_Data(Dataset):
         self.chunks = {}
         self._prep_chunk(chunk_size, chunk_num)
 
-    def _prep_chunk(self, chunk_size, chunk_num):
+    def _prep_chunk(self, chunk_size, chunk_num, normlization=False):
         """Split chunks.
 
         Args:
             chunk_size (int): The chunk size.
             chunk_num (int): The chunk num.
+            normlization (bool, optional): Control normalization.
+                                           Defaults to False.
         """
         for i in range(chunk_num):
             chunk_data = self.values[i * chunk_size : (i + 1) * chunk_size, :]  # noqa: E203, E501
-            scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
+            if normlization:
+                scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
+            else:
+                scale, base = (
+                    0,
+                    chunk_data[: self.in_len],
+                )  # chunk_data will be processed directly
             self.chunks[i] = {
                 'feat_data': base,
                 'scale': scale,
@@ -80,7 +88,7 @@ class Genera_Data(Dataset):
         )
 
 
-class DataInterface(pl.LightningDataModule):
+class DataInterface(LightningDataModule):
     """Data Interface.
 
     It supports pytorch lightning trainer to call the data module.
@@ -111,7 +119,7 @@ class DataInterface(pl.LightningDataModule):
     def setup(self, stage=None):
 
         if stage == 'fit' or stage is None:
-            dataset = Genera_Data(self.df, size=self.size)
+            dataset = General_Data(self.df, size=self.size)
             # based on time
             train_num, test_num = int(dataset.__len__() * self.split[0]), int(
                 dataset.__len__() * self.split[2]
@@ -129,7 +137,7 @@ class DataInterface(pl.LightningDataModule):
             )
 
         if stage == 'predict':
-            self.predict = Genera_Data(self.df, size=self.size)
+            self.predict = General_Data(self.df, size=self.size)
 
     def train_dataloader(self):
         return DataLoader(self.train, batch_size=self.batch_size, shuffle=True)

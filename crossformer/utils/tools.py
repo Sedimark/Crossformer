@@ -4,7 +4,7 @@
     Maintainer: Peipei Wu (Paul) - Surrey
 """
 
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 import torch
 import numpy as np
 
