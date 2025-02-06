@@ -200,7 +200,8 @@ class CrossFormer(LightningModule):
         else:
             y_hat = self(x)
         loss = self.loss(y_hat, y)
-        self.logger.experiment.log_metric(key='train_loss', value=loss)
+        self.log("train_loss", loss, prog_bar=True, logger=True,
+                 on_step=True, on_epoch=True)
         return {'loss': loss}
 
     def validation_step(self, batch, batch_idx):
@@ -240,7 +241,10 @@ class CrossFormer(LightningModule):
             dict: Test metrics.
         """
         (x, scale, y) = batch
-        y_hat = self(x) * scale.unsqueeze(1)
+        if scale._is_zerotensor():
+            y_hat = self(x) * scale.unsqueeze(1)
+        else:
+            y_hat = self(x)
         metrics = metric(y_hat, y)
         metrics = {f'test_{key}': value for key, value in metrics.items()}
         self.log_dict(
@@ -273,7 +277,7 @@ class CrossFormer(LightningModule):
             self.model.parameters(), lr=self.learning_rate
         )
         scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lambda epoch: 0.1 ** (epoch // 10)
+            optimizer, lambda epoch: 0.1 ** (epoch // 20)
         )
         return {
             'optimizer': optimizer,

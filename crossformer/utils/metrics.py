@@ -190,6 +190,7 @@ def metric(pred, true):
     Returns:
         dict: Dictionary containing MAE, MSE, RMSE, MAPE, and MSPE values.
     """
+    score_value = hybrid_loss(pred, true)
     mae_value = mae(pred, true)
     mse_value = mse(pred, true)
     rmse_value = rmse(pred, true)
@@ -202,4 +203,5 @@ def metric(pred, true):
         'RMSE': rmse_value,
         'MAPE': mape_value,
         'MSPE': mspe_value,
+        'SCORE': score_value
     }

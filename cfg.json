@@ -14,8 +14,15 @@
     "learning_rate": 0.1,
     "batch_size": 8,
     "csv_path": "data/broker_values.csv",
-    "size": [24, 24],
-    "split": [0.7,0.2,0.1],
+    "size": [
+        24,
+        24
+    ],
+    "split": [
+        0.7,
+        0.2,
+        0.1
+    ],
     "seed": 2024,
     "accelerator": "auto",
     "min_epochs": 10,

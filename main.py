@@ -13,8 +13,9 @@ from crossformer.model.crossformer import CrossFormer
 from crossformer.utils.tools import early_stop, model_ckpt
 import pandas as pd
 from lightning.pytorch import Trainer
-from lightning.pytorch.loggers import MLFlowLogger
+# from lightning.pytorch.loggers import MLFlowLogger
 import torch
+import mlflow
 # from pytorch_lightning.cli import LightningCLI
 
 
@@ -38,13 +39,6 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
     """
     torch.set_float32_matmul_precision("medium")
 
-    # mlflow logger
-    # mlflow.cli.server()  # start the mlflow server
-    mlflow_logger = MLFlowLogger(
-        experiment_name="mlflow_logger_test",
-        tracking_uri="http://localhost:5000",
-    )
-
     # data loading
     if flag == "predict":
         cfg["split"] = [0, 0, 1]
@@ -65,12 +59,13 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
         check_val_every_n_epoch=1,
         fast_dev_run=False,
         callbacks=[model_ckpt, early_stop],
-        logger=mlflow_logger,
     )
 
     if flag == "fit":
-        trainer.fit(model, data)
-        test_result = trainer.test(model, data)
+        mlflow.pytorch.autolog()
+        with mlflow.start_run() as run:
+            trainer.fit(model, data)
+        test_result = trainer.test(model, data, ckpt_path="best")
         return test_result
     elif flag == "predict":
         return trainer.predict(model, data)
