@@ -63,7 +63,7 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
 
     if flag == "fit":
         mlflow.pytorch.autolog()
-        with mlflow.start_run() as run:
+        with mlflow.start_run() as run: 
             trainer.fit(model, data)
         test_result = trainer.test(model, data, ckpt_path="best")
         return test_result

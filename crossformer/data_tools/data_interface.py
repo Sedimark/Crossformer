@@ -95,14 +95,15 @@ class DataInterface(LightningDataModule):
     """
 
     def __init__(
-        self, df, size=[24, 24], split=[0.7, 0.2, 0.1], batch_size=1, **kwargs
+        self, df, in_len=24, out_len=24, split=[0.7, 0.2, 0.1], batch_size=1, 
+        **kwargs
     ) -> None:
         """_summary_
 
         Args:
             df (pd.DataFrame): DataFrame (data).
-            size (list): Chunk size [input length, output length]. Defaults to
-                         [24, 24].
+            in_len (int): The length of the input sequence.
+            out_len (int): The length of the output sequence.
             split (list, optional): Splits of train, val and test set.
                                     Defaults to [0.7, 0.2, 0.1].
             batch_size (int, optional): Batch size. Defaults to 1.
@@ -110,7 +111,7 @@ class DataInterface(LightningDataModule):
         super().__init__()
         self.df = df
         self.split = split
-        self.size = size
+        self.size = [in_len, out_len]
         self.batch_size = batch_size
 
     def prepare_data(self):

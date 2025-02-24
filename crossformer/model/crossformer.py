@@ -16,7 +16,6 @@ from crossformer.model.layers.decoder import Decoder
 from crossformer.model.layers.embedding import ValueEmebedding
 from crossformer.utils.metrics import metric, hybrid_loss
 
-
 class Crossformer(nn.Module):
     """Crossformer class.
 
