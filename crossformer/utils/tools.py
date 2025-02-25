@@ -28,14 +28,14 @@ def scaler(data: np.array):
 model_ckpt = ModelCheckpoint(
     dirpath='mlruns/models',
     # filename='best_model',  # '{epoch}-{val_loss:.2f}',
-    monitor='val_SCORE',
+    monitor='val_SCORE_epoch',
     mode='min',
     save_top_k=1,
     save_weights_only=False,
 )
 
 early_stop = EarlyStopping(
-    monitor='val_SCORE',
+    monitor='val_SCORE_epoch',
     patience=20,
     mode='min',
 )

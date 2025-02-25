@@ -286,7 +286,7 @@ class CrossFormer(LightningModule):
             self.model.parameters(), lr=self.learning_rate
         )
         scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lambda epoch: 0.1 ** (epoch // 20)
+            optimizer, lambda epoch: 1 ** (epoch // 20)
         )
         return {
             'optimizer': optimizer,
