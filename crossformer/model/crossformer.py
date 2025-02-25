@@ -16,6 +16,7 @@ from crossformer.model.layers.decoder import Decoder
 from crossformer.model.layers.embedding import ValueEmebedding
 from crossformer.utils.metrics import metric, hybrid_loss
 
+
 class Crossformer(nn.Module):
     """Crossformer class.
 
@@ -199,8 +200,14 @@ class CrossFormer(LightningModule):
         else:
             y_hat = self(x)
         loss = self.loss(y_hat, y)
-        self.log("train_loss", loss, prog_bar=True, logger=True,
-                 on_step=True, on_epoch=True)
+        self.log(
+            "train_loss",
+            loss,
+            prog_bar=True,
+            logger=True,
+            on_step=True,
+            on_epoch=True,
+        )
         return {'loss': loss}
 
     def validation_step(self, batch, batch_idx):
@@ -263,7 +270,10 @@ class CrossFormer(LightningModule):
             torch.Tensor: Predicted values.
         """
         (x, scale, y) = batch
-        y_hat = self(x) * scale.unsqueeze(1)
+        if scale._is_zerotensor():
+            y_hat = self(x) * scale.unsqueeze(1)
+        else:
+            y_hat = self(x)
         return y_hat
 
     def configure_optimizers(self):

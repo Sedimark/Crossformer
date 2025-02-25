@@ -63,7 +63,7 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
 
     if flag == "fit":
         mlflow.pytorch.autolog()
-        with mlflow.start_run() as run: 
+        with mlflow.start_run() as run:
             trainer.fit(model, data)
         test_result = trainer.test(model, data, ckpt_path="best")
         return test_result
@@ -82,9 +82,9 @@ def main(json_path, flag="fit"):
     """
     with open(json_path) as f:
         cfg = json.load(f)
-    result = core(pd.read_csv(cfg["csv_path"]), cfg, "fit")
+    result = core(pd.read_csv(cfg["csv_path"]), cfg, flag=flag)
     print(result)
 
 
 if __name__ == "__main__":
-    main(json_path="cfg.json", flag="fit")
+    main(json_path="cfg.json", flag="predict")
