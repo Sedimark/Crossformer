@@ -95,8 +95,14 @@ class DataInterface(LightningDataModule):
     """
 
     def __init__(
-        self, df, in_len=24, out_len=24, split=[0.7, 0.2, 0.1], batch_size=1, 
-        **kwargs
+        self,
+        df,
+        in_len=24,
+        out_len=24,
+        split=[0.7, 0.2, 0.1],
+        batch_size=1,
+        num_workers=31,
+        **kwargs,
     ) -> None:
         """_summary_
 
@@ -113,6 +119,7 @@ class DataInterface(LightningDataModule):
         self.split = split
         self.size = [in_len, out_len]
         self.batch_size = batch_size
+        self.num_workers = num_workers
 
     def prepare_data(self):
         pass
@@ -141,18 +148,20 @@ class DataInterface(LightningDataModule):
             self.predict = General_Data(self.df, size=self.size)
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(
+            self.train,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+        )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val,
-            batch_size=self.batch_size,
+            self.val, batch_size=self.batch_size, num_workers=self.num_workers
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test,
-            batch_size=self.batch_size,
+            self.test, batch_size=self.batch_size, num_workers=self.num_workers
         )
 
     def predict_dataloader(self):

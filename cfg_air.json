@@ -1,5 +1,5 @@
 {
-    "data_dim": 5,
+    "data_dim": 8,
     "in_len": 48,
     "out_len": 24,
     "seg_len": 2,
@@ -13,7 +13,7 @@
     "baseline": false,
     "learning_rate": 0.1,
     "batch_size": 8,
-    "csv_path": "data/weather/broker_values.csv",
+    "csv_path": "data/air/values.csv",
     "size": [
         24,
         24
@@ -28,5 +28,6 @@
     "min_epochs": 10,
     "max_epochs": 200,
     "precision": 32,
-    "patience": 15
+    "patience": 5,
+    "num_workers": 31
 }

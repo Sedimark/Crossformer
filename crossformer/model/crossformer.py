@@ -292,7 +292,7 @@ class CrossFormer(LightningModule):
             'optimizer': optimizer,
             'lr_scheduler': {
                 'scheduler': scheduler,
-                'monitor': 'val_MAE',
+                'monitor': 'val_SCORE',
                 'interval': 'epoch',
                 'frequency': 1,
             },

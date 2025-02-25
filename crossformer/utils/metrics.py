@@ -58,6 +58,8 @@ def scaled_log_cosh(pred, true, scaled_factor, epsilon=1e-6):
         torch.Tensor: Scaled Log Cosh
     """
     diff = true - pred
+    if diff.max() > 50:
+        diff = torch.clamp(diff, max=50)
     scaled_log_cosh = torch.log(torch.cosh(diff)) / (scaled_factor + epsilon)
     return torch.mean(scaled_log_cosh)
 
@@ -203,5 +205,5 @@ def metric(pred, true):
         'RMSE': rmse_value,
         'MAPE': mape_value,
         'MSPE': mspe_value,
-        'SCORE': score_value
+        'SCORE': score_value,
     }

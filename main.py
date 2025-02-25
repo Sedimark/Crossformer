@@ -83,8 +83,11 @@ def main(json_path, flag="fit"):
     with open(json_path) as f:
         cfg = json.load(f)
     result = core(pd.read_csv(cfg["csv_path"]), cfg, flag=flag)
-    print(result)
+    if flag == "fit":
+        print("Test Result:", result)
+    elif flag == "predict":
+        print("Prediction Result:", result)
 
 
 if __name__ == "__main__":
-    main(json_path="cfg.json", flag="predict")
+    main(json_path="cfg_air.json", flag="fit")

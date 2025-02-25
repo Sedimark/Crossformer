@@ -27,7 +27,7 @@ def scaler(data: np.array):
 
 model_ckpt = ModelCheckpoint(
     dirpath='mlruns/models',
-    filename='best_model',  # '{epoch}-{val_loss:.2f}',
+    # filename='best_model',  # '{epoch}-{val_loss:.2f}',
     monitor='val_SCORE',
     mode='min',
     save_top_k=1,
