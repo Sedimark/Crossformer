@@ -10,12 +10,13 @@ import json
 # import mlflow.cli
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
-from crossformer.utils.tools import early_stop, model_ckpt
+# from crossformer.utils.tools import early_stop, model_ckpt
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 import pandas as pd
 from lightning.pytorch import Trainer
 # from lightning.pytorch.loggers import MLFlowLogger
 import torch
-import mlflow
+import mlflow.pytorch  # the previous import is wrong
 # from pytorch_lightning.cli import LightningCLI
 
 
@@ -50,6 +51,21 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
         model = CrossFormer(cfg)
     data = DataInterface(df, **cfg)
 
+    # callbacks
+    model_ckpt = ModelCheckpoint(
+        dirpath='mlruns/models',
+        monitor='val_SCORE',
+        mode='min',
+        save_top_k=1,
+        save_weights_only=False,
+    )
+
+    early_stop = EarlyStopping(
+        monitor='val_SCORE',
+        patience=cfg["patience"],
+        mode='min',
+    )
+
     # trainer
     trainer = Trainer(
         accelerator=cfg["accelerator"],
@@ -62,7 +78,9 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
     )
 
     if flag == "fit":
-        mlflow.pytorch.autolog()
+        mlflow.pytorch.autolog(
+            checkpoint_monitor='val_SCORE'
+        )  # the problem is here
         with mlflow.start_run() as run:
             trainer.fit(model, data)
         test_result = trainer.test(model, data, ckpt_path="best")
