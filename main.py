@@ -46,7 +46,7 @@ def core(
     # TODO: clean for automation
     mlflow.set_tracking_uri("http://localhost:5000")
     mlflow.set_registry_uri("http://localhost:5000")
-    mlflow.set_experiment('air')
+    mlflow.set_experiment('weather')
 
     if flag == 'fit':
         # callbacks
@@ -102,9 +102,6 @@ def core(
             "models:/best_model/latest"
         )  # TODO: specify model later
         model.eval()
-        # df = pd.DataFrame(
-        #     torch.randn(48, 8).numpy()
-        # )  # replace by the test sample
         input_tensor = torch.tensor(df.values, dtype=torch.float32).unsqueeze(0)
         with torch.no_grad():
             predictions = model(input_tensor)
@@ -138,4 +135,4 @@ def main(json_path, flag="fit"):
 
 
 if __name__ == "__main__":
-    main(json_path="cfg_air.json", flag="fit")
+    main(json_path="cfg_weather.json", flag="fit")
