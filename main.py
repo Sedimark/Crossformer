@@ -49,7 +49,6 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
 
     # callbacks
     model_ckpt = ModelCheckpoint(
-        # dirpath='mlruns/models',
         monitor='val_SCORE',
         mode='min',
         save_top_k=1,
