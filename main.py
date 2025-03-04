@@ -35,6 +35,7 @@ def core(df: pd.DataFrame, cfg: dict, flag: str = "fit"):
        predict_result (torch.tensor): predictions if flag 'predict'.
     """
     torch.set_float32_matmul_precision("medium")
+    mlflow.set_tracking_uri('http://localhost:5000')
 
     # data loading
     if flag == "predict":
@@ -93,8 +94,6 @@ def main(json_path, flag="fit"):
         json_path (str): The path of cfg json file.
         flag (str): Flag indicates different purpose. Defaults to "fit".
     """
-
-    mlflow.set_tracking_uri('http://localhost:5000')
 
     with open(json_path) as f:
         cfg = json.load(f)
