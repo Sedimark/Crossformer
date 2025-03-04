@@ -138,4 +138,4 @@ def main(json_path, flag="fit"):
 
 
 if __name__ == "__main__":
-    main(json_path="cfg_air.json", flag="predict")
+    main(json_path="cfg_air.json", flag="fit")

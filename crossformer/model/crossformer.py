@@ -204,7 +204,7 @@ class CrossFormer(LightningModule):
             loss,
             prog_bar=True,
             logger=True,
-            on_step=True,
+            on_step=False,
             on_epoch=True,
         )
         return {'loss': loss}
@@ -229,7 +229,7 @@ class CrossFormer(LightningModule):
         metrics = metric(y_hat, y)
         metrics = {f'val_{key}': value for key, value in metrics.items()}
         self.log_dict(
-            metrics, prog_bar=True, logger=True, on_step=True, on_epoch=True
+            metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
         return metrics
 
@@ -253,7 +253,7 @@ class CrossFormer(LightningModule):
         metrics = metric(y_hat, y)
         metrics = {f'test_{key}': value for key, value in metrics.items()}
         self.log_dict(
-            metrics, prog_bar=True, logger=True, on_step=True, on_epoch=True
+            metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
         return metrics
 
@@ -285,7 +285,7 @@ class CrossFormer(LightningModule):
             self.model.parameters(), lr=self.learning_rate
         )
         scheduler = torch.optim.lr_scheduler.LambdaLR(
-            optimizer, lambda epoch: 1 ** (epoch // 20)
+            optimizer, lambda epoch: 1 ** (epoch // 40)
         )
         return {
             'optimizer': optimizer,
