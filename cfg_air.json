@@ -22,7 +22,7 @@
     "seed": 2024,
     "accelerator": "auto",
     "min_epochs": 1,
-    "max_epochs": 5,
+    "max_epochs": 200,
     "precision": 32,
     "patience": 5,
     "num_workers": 31
