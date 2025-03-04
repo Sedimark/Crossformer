@@ -15,6 +15,7 @@ from crossformer.model.layers.encoder import Encoder
 from crossformer.model.layers.decoder import Decoder
 from crossformer.model.layers.embedding import ValueEmebedding
 from crossformer.utils.metrics import metric, hybrid_loss
+import mlflow
 
 
 class Crossformer(nn.Module):
@@ -174,7 +175,6 @@ class CrossFormer(LightningModule):
         self.model = Crossformer(**cfg)
 
         # Training Parameters
-        # self.loss = nn.MSELoss()
         self.loss = hybrid_loss
         self.learning_rate = learning_rate
         self.batch = batch
