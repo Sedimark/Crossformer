@@ -44,9 +44,9 @@ def core(
 
     # mlflow settings
     # TODO: clean for automation
-    mlflow.set_tracking_uri("http://localhost:5000")
-    mlflow.set_registry_uri("http://localhost:5000")
-    mlflow.set_experiment('weather')
+    mlflow.set_tracking_uri(cfg['tracking_uri'])
+    mlflow.set_registry_uri(cfg['registry_uri'])
+    mlflow.set_experiment(cfg['experiment_name'])
 
     if flag == 'fit':
         # callbacks
@@ -93,7 +93,7 @@ def core(
                 signature=signature,
             )
         model_uri = f"runs:/{run.info.run_id}/model"
-        mlflow.register_model(model_uri, "best_model")
+        mlflow.register_model(model_uri, f"{cfg['experiment_name']}_best_model")
         test_result = trainer.test(model, data, ckpt_path="best")
         return test_result
 
@@ -135,4 +135,5 @@ def main(json_path, flag="fit"):
 
 
 if __name__ == "__main__":
+
     main(json_path="cfg_weather.json", flag="fit")

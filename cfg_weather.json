@@ -25,5 +25,8 @@
     "max_epochs": 200,
     "precision": 32,
     "patience": 5,
-    "num_workers": 31
+    "num_workers": 31,
+    "tracking_uri": "http://localhost:5000",
+    "registry_uri": "http://localhost:5000",
+    "experiment_name": "weather"
 }

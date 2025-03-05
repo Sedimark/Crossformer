@@ -46,27 +46,11 @@ This is the manual for package and experiment's configuration.
 **precision** ***(int)*** -> The precision level for training (e.g., 16, 32).
 
 **patience** ***(int)*** -> The number of epochs to wait for improvement before early stopping.
-{
-    "data_dim": 5, the dimension
-    "in_len": 24,
-    "out_len": 24,
-    "seg_len": 2,
-    "window_size": 4,
-    "factor": 10,
-    "model_dim": 256,
-    "feedforward_dim": 512,
-    "head_num": 4,
-    "layer_num": 3,
-    "dropout": 0.2,
-    "baseline": false,
-    "learning_rate": 0.1,
-    "batch_size": 8,
-    "csv_path": "data/broker_values.csv",
-    "split": [0.7,0.2,0.1],
-    "seed": 2024,
-    "accelerator": "auto",
-    "min_epochs": 10,
-    "max_epochs": 200,
-    "precision": 32,
-    "patience": 15
-}
+
+**num_workers** ***(int)*** -> The number of workers to increase CPU loading.
+
+**tracking_uri** ***(str)*** -> The uri for tracking server.
+
+**registry_uri** ***(str)*** -> The uri for registry server.
+
+**experiment_name** ***(str)*** -> The name of the experiment indicating different use cases.
