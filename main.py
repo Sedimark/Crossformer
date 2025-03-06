@@ -99,7 +99,7 @@ def core(
 
     elif flag == 'predict':
         model = mlflow.pytorch.load_model(
-            "models:/best_model/latest"
+            f"models:/{cfg['experiment_name']}_best_model/latest"
         )  # TODO: specify model later
         model.eval()
         input_tensor = torch.tensor(df.values, dtype=torch.float32).unsqueeze(0)
