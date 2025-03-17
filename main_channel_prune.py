@@ -1,9 +1,9 @@
 """Main file.
 
-The main file for training CrossFormer or predicting
+The main file for Channel pruning and training Pruned CrossFormer or predicting
 
-Author: Peipei Wu (Paul) - Surrey
-Maintainer: Peipei Wu (Paul) - Surrey
+Author: Sneha H - Surrey
+Maintainer: Sneha H - Surrey
 """
 
 import json
