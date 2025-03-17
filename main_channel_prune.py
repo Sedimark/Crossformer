@@ -1,4 +1,4 @@
-"""Main file.
+"""Main file for channel pruning`.
 
 The main file for Channel pruning and training Pruned CrossFormer or predicting
 
