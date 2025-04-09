@@ -8,7 +8,7 @@ The project directory is structured as follows:
 
 ```
 Surrey_AI/
-├── crossformer
+├── crossformer (python package)
 │   ├── __init__.py
 │   ├── data_tools
 │   │     ├── __init__.py
@@ -26,7 +26,7 @@ Surrey_AI/
 │   │     ├── __init__.py
 │   │     ├── metrics.py    
 │   │     ├── tools.py              # training tools
-├── crossformer
+├── data (not included in the package)
 │   ├── all_weather_values.csv      # all weather data (values-only)
 │   ├── broker_values.csv           # part data accessed from broker (values only)
 │   ├── broker.csv                  # part data accessed from broker
