@@ -4,6 +4,7 @@
 *.ptx
 *.cubin
 *.fatbin
+*.DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -38,3 +39,22 @@ ENV/
 
 lightning_logs/
 results/
+
+# Logger & Logs
+wandb/
+mlruns/
+mlartifacts/
+logs/
+*.log
+*.log.*
+*.log-*
+*.log/*
+
+# code check
+*.flake8
+.flake8
+.mypy_cache/
+.pyre/
+.pytype/
+./pylint.d/
+.cache/

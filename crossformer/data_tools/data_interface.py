@@ -1,106 +1,183 @@
-"""
-    Description: Data Interface
+"""Data Interface.
+
+    Data Interface provides dataset and datamodule definition.
+
     Author: Peipei Wu (Paul) - Surrey
     Maintainer: Peipei Wu (Paul) - Surrey
 """
 
 import torch
-import numpy as np
-import pandas as pd
-from torch.utils.data import Dataset, DataLoader, random_split
-import pytorch_lightning as pl
+from torch.utils.data import Dataset, DataLoader, Subset
+from lightning.pytorch import LightningDataModule
+from crossformer.utils.tools import scaler
 
-class Data_Weather(Dataset):
+
+class General_Data(Dataset):
     """
-        For the SEDIMARK weather data use only
+    *** For the general SEDIMARK data use ***
+    SEDIMARK Data is structured in annotations (etc. data type, collumn name)
+    and values. As this class is used for core wheels (or we also called core
+    functions), we do only accept values as input. Therefore, an external tool
+    for linking annotations and values will be provided in future.
     """
-    def __init__(self, df,
-                 size=[24,24]) -> None:
+
+    def __init__(self, df, size=[24, 24], **kwargs):
+        """_initialize the general dataset class
+
+        Args:
+            df (pd.DataFrame): DataFrame (data).
+            size (list): Chunk size [input length, output length]. Defaults to
+                         [24, 24].
+        """
         super().__init__()
 
-        self.df = df
-        
-        # convert into np
-        if self.df.columns[0] != 'UnixTime':
-            self.df = self.df.values[:,1:] # remove the index column
-        else:
-            self.df = self.df.to_numpy()
-
-        # input and output lengths
-        self.in_len = size[0]
-        self.out_len = size[1]
+        self.values = df.to_numpy()
+        self.in_len, self.out_len = size
 
         chunk_size = self.in_len + self.out_len
-        chunk_num = len(self.df) // chunk_size
+        chunk_num = len(self.values) // chunk_size
 
         self.chunks = {}
         self._prep_chunk(chunk_size, chunk_num)
 
-    def _prep_chunk(self, chunk_size, chunk_num):
+    def _prep_chunk(self, chunk_size, chunk_num, normlization=False):
+        """Split chunks.
+
+        Args:
+            chunk_size (int): The chunk size.
+            chunk_num (int): The chunk num.
+            normlization (bool, optional): Control normalization.
+                                           Defaults to False.
+        """
         for i in range(chunk_num):
-            chunk_data = self.df[i*chunk_size:(i+1)*chunk_size,:]
+            chunk_data = self.values[i * chunk_size : (i + 1) * chunk_size, :]  # noqa: E203, E501
+            if normlization:
+                scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
+            else:
+                scale, base = (
+                    0,
+                    chunk_data[: self.in_len],
+                )  # chunk_data will be processed directly
             self.chunks[i] = {
-                'feat_data': chunk_data[:self.in_len,1:],
-                'target_data': chunk_data[-self.out_len:,1:],
-                'annotation': {
-                    'feat_time': chunk_data[:self.in_len,0],
-                    'target_time': chunk_data[-self.out_len:,0],
-                }
+                'feat_data': base,
+                'scale': scale,
+                'target_data': chunk_data[-self.out_len :],  # noqa: E203
             }
 
     def __len__(self):
+        """Return the length of dataset.
+
+        Returns:
+            (int): The length of dataset
+        """
         return len(self.chunks)
-    
+
     def __getitem__(self, idx):
-        return self.chunks[idx]
-    
-def custom_collate_fn(batch):
-        feat_batch = []
-        target_batch = []
-        annotation_batch = []
+        """Get item from the dataset.
 
-        for item in batch:
-            feat_batch.append(torch.tensor(item['feat_data'], dtype=torch.float32))
-            target_batch.append(torch.tensor(item['target_data'], dtype=torch.float32))
-            annotation_batch.append(item['annotation'])
+        Args:
+            idx (int): Index of the item.
 
-        feat_batch = torch.stack(feat_batch)
-        target_batch = torch.stack(target_batch)
+        Returns:
+            (torch.tensor): Item's content. (feat_data, scale, ground_truth)
+        """
+        return (
+            torch.tensor(self.chunks[idx]['feat_data'], dtype=torch.float32),
+            torch.tensor(self.chunks[idx]['scale'], dtype=torch.float32),
+            torch.tensor(self.chunks[idx]['target_data'], dtype=torch.float32),
+        )
 
-        return feat_batch, target_batch, annotation_batch
 
-class DataInterface(pl.LightningDataModule):
-    def __init__(self, df, size=[24,24], split=[0.7,0.2,0.1],
-                 batch_size=1, **kwargs) -> None:
+class DataInterface(LightningDataModule):
+    """Data Interface.
+
+    It supports pytorch lightning trainer to call the data module.
+    """
+
+    def __init__(
+        self,
+        df,
+        in_len=24,
+        out_len=24,
+        split=[0.7, 0.2, 0.1],
+        batch_size=1,
+        num_workers=31,
+        **kwargs,
+    ) -> None:
+        """_summary_
+
+        Args:
+            df (pd.DataFrame): DataFrame (data).
+            in_len (int): The length of the input sequence.
+            out_len (int): The length of the output sequence.
+            split (list, optional): Splits of train, val and test set.
+                                    Defaults to [0.7, 0.2, 0.1].
+            batch_size (int, optional): Batch size. Defaults to 1.
+        """
         super().__init__()
         self.df = df
         self.split = split
-        self.size = size
+        self.size = [in_len, out_len]
         self.batch_size = batch_size
+        self.num_workers = num_workers
 
     def prepare_data(self):
-        pass 
+        pass
 
     def setup(self, stage=None):
-        dataset = Data_Weather(self.df)
-        self.train, self.val, self.test = random_split(dataset, self.split)
+
+        if stage == 'fit' or stage is None:
+            dataset = General_Data(self.df, size=self.size)
+            # based on time
+            train_num, test_num = int(dataset.__len__() * self.split[0]), int(
+                dataset.__len__() * self.split[2]
+            )
+            val_num = dataset.__len__() - train_num - test_num
+            train_index, val_index, test_index = (
+                list(range(0, train_num)),
+                list(range(train_num, train_num + val_num)),
+                list(range(train_num + val_num, dataset.__len__())),
+            )
+            self.train, self.val, self.test = (
+                Subset(dataset=dataset, indices=train_index),
+                Subset(dataset=dataset, indices=val_index),
+                Subset(dataset=dataset, indices=test_index),
+            )
+
+        if stage == 'predict':
+            self.predict = General_Data(self.df, size=self.size)
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, collate_fn=custom_collate_fn, shuffle=True)
-    
+        return DataLoader(
+            self.train,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+        )
+
     def val_dataloader(self):
-        return DataLoader(self.val, batch_size=self.batch_size, collate_fn=custom_collate_fn)
-    
+        return DataLoader(
+            self.val, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, collate_fn=custom_collate_fn)
-    
-if __name__ == "__main__":
-    import pandas as pd
-    df = pd.read_csv('/home/paul/CODE/fl_crossformer/broker.csv')
-    data = DataInterface(df)
-    data.setup()
-    train_loader = data.train_dataloader()
-    for i, batch in enumerate(train_loader):
-        print(batch)
-        if i == 0:
-            break
+        return DataLoader(
+            self.test, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+
+    def predict_dataloader(self):
+        return DataLoader(
+            self.predict,
+            batch_size=self.batch_size,
+        )
+
+
+# if __name__ == "__main__":
+#     import pandas as pd
+#     df = pd.read_csv('././all_weather_values.csv')
+#     data = DataInterface(df, size=[2, 2], batch_size=1)
+#     data.setup()
+#     train_loader = data.train_dataloader()
+#     for i, batch in enumerate(train_loader):
+#         print(batch)
+#         if i == 0:
+#             break

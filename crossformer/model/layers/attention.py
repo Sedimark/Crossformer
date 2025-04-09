@@ -9,25 +9,50 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange, repeat
 
+
 class Attention(nn.Module):
+
     def __init__(self, dropout=0.1):
         super().__init__()
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, q, k ,v):
-        B, L, H, E = q.shape # Batch, Length, Heads, Embedding
-        _, S, _, D = k.shape # Batch, Sequence, Heads, Embedding
+    def forward(self, q, k, v):
+        """Calculate attention.
 
-        scale = (E ** -0.5)
+        Args:
+            q (torch.Tensor): Query tensor of shape
+                              (batch, length, heads, embedding)
+            k (torch.Tensor): Key tensor of shape
+                              (batch, sequence, heads, embedding)
+            v (torch.Tensor): Value tensor of shape
+                              (batch, sequence, heads, embedding)
+
+        Returns:
+            torch.Tensor: Output tensor of shape
+                          (batch, length, heads, embedding)
+        """
+        B, L, H, E = q.shape  # Batch, Length, Heads, Embedding
+        _, S, _, D = k.shape  # Batch, Sequence, Heads, Embedding
+
+        scale = E**-0.5
 
         scores = torch.einsum('b l h e, b s h d -> b h l s', q, k)
-        attention = self.dropout(F.softmax(scores*scale,dim=-1))
+        attention = self.dropout(F.softmax(scores * scale, dim=-1))
         out = torch.einsum('b h l s, b s h d -> b l h d', attention, v)
         return out.contiguous()
-    
+
 
 class AttentionLayer(nn.Module):
+
     def __init__(self, model_dim, heads_num, dropout=0.1):
+        """
+        Initialize the AttentionLayer.
+
+        Args:
+            model_dim (int): Dimension of the model.
+            heads_num (int): Number of attention heads.
+            dropout (float, optional): Dropout rate. Defaults to 0.1.
+        """
         super().__init__()
 
         k_dim = model_dim // heads_num
@@ -43,9 +68,20 @@ class AttentionLayer(nn.Module):
         self.heads_num = heads_num
 
     def forward(self, q, k, v):
+        """
+        Perform the forward pass of the AttentionLayer.
+
+        Args:
+            q (torch.Tensor): Query tensor of shape (batch, length, embedding)
+            k (torch.Tensor): Key tensor of shape (batch, sequence, embedding)
+            v (torch.Tensor): Value tensor of shape (batch, sequence, embedding)
+
+        Returns:
+            torch.Tensor: Output tensor of shape (batch, length, embedding)
+        """
         B, L, E = q.shape
         _, S, _ = k.shape
-       
+
         q = self.q_proj(q).view(B, L, self.heads_num, -1)
         k = self.k_proj(k).view(B, S, self.heads_num, -1)
         v = self.v_proj(v).view(B, S, self.heads_num, -1)
@@ -57,15 +93,41 @@ class AttentionLayer(nn.Module):
 
         return out
 
+
 class TwoStageAttentionLayer(nn.Module):
-    def __init__(self, seg_num, factor, model_dim, heads_num, feedforward_dim=None, dropout=0.1):
+
+    def __init__(
+        self,
+        seg_num,
+        factor,
+        model_dim,
+        heads_num,
+        feedforward_dim=None,
+        dropout=0.1,
+    ):
+        """
+        Initialize the TwoStageAttentionLayer.
+
+        Args:
+            seg_num (int): Number of segments.
+            factor (int): Factor for the router parameter.
+            model_dim (int): Dimension of the model.
+            heads_num (int): Number of attention heads.
+            feedforward_dim (int, optional): Dimension of the feedforward
+                                             network. Defaults to None.
+            dropout (float, optional): Dropout rate. Defaults to 0.1.
+        """
         super(TwoStageAttentionLayer, self).__init__()
         feedforward_dim = feedforward_dim or 4 * model_dim
-        self.time_attention = AttentionLayer(model_dim, heads_num, dropout=dropout)
-        self.dim_sender = AttentionLayer(model_dim, heads_num, dropout=dropout) 
-        self.dim_receiver = AttentionLayer(model_dim, heads_num, dropout=dropout) 
+        self.time_attention = AttentionLayer(
+            model_dim, heads_num, dropout=dropout
+        )
+        self.dim_sender = AttentionLayer(model_dim, heads_num, dropout=dropout)
+        self.dim_receiver = AttentionLayer(
+            model_dim, heads_num, dropout=dropout
+        )
         self.router = nn.Parameter(torch.randn(seg_num, factor, model_dim))
-        
+
         self.dropout = nn.Dropout(dropout)
 
         self.norm1 = nn.LayerNorm(model_dim)
@@ -73,17 +135,34 @@ class TwoStageAttentionLayer(nn.Module):
         self.norm3 = nn.LayerNorm(model_dim)
         self.norm4 = nn.LayerNorm(model_dim)
 
-        self.MLP1 = nn.Sequential(nn.Linear(model_dim, feedforward_dim),
-                                  nn.GELU(),
-                                  nn.Linear(feedforward_dim, model_dim))
-        self.MLP2 = nn.Sequential(nn.Linear(model_dim, feedforward_dim),
-                                  nn.GELU(),
-                                  nn.Linear(feedforward_dim, model_dim))
+        self.MLP1 = nn.Sequential(
+            nn.Linear(model_dim, feedforward_dim),
+            nn.GELU(),
+            nn.Linear(feedforward_dim, model_dim),
+        )
+        self.MLP2 = nn.Sequential(
+            nn.Linear(model_dim, feedforward_dim),
+            nn.GELU(),
+            nn.Linear(feedforward_dim, model_dim),
+        )
 
     def forward(self, x):
+        """
+        Perform the forward pass of the TwoStageAttentionLayer.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape
+                              (batch, data_dim, seg_num, model_dim)
+
+        Returns:
+            torch.Tensor: Output tensor of shape
+                          (batch, data_dim, seg_num, model_dim)
+        """
         batch = x.shape[0]
-        time_in = rearrange(x, 'b data_dim seg_num model_dim -> (b data_dim) seg_num model_dim')
-        
+        time_in = rearrange(
+            x, 'b data_dim seg_num model_dim -> (b data_dim) seg_num model_dim'
+        )
+
         # Cross Time Stage
         time_enc = self.time_attention(time_in, time_in, time_in)
         dim_in = time_in + self.dropout(time_enc)
@@ -92,8 +171,16 @@ class TwoStageAttentionLayer(nn.Module):
         dim_in = self.norm2(dim_in)
 
         # Cross Dimension Stage
-        dim_send = rearrange(dim_in, '(b data_dim) seg_num model_dim -> (b seg_num)  data_dim  model_dim', b=batch)
-        batch_router = repeat(self.router, 'seg_num factor model_dim -> (repeat seg_num)  factor  model_dim', repeat=batch)
+        dim_send = rearrange(
+            dim_in,
+            '(b data_dim) seg_num model_dim -> (b seg_num)  data_dim  model_dim',  # noqa: E501
+            b=batch,
+        )
+        batch_router = repeat(
+            self.router,
+            'seg_num factor model_dim -> (repeat seg_num)  factor  model_dim',
+            repeat=batch,
+        )
         dim_buffer = self.dim_sender(batch_router, dim_send, dim_send)
         dim_receive = self.dim_receiver(dim_send, dim_buffer, dim_buffer)
         dim_enc = dim_send + self.dropout(dim_receive)
@@ -101,6 +188,10 @@ class TwoStageAttentionLayer(nn.Module):
         dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
         dim_enc = self.norm4(dim_enc)
 
-        final_out = rearrange(dim_enc, '(b seg_num)  data_dim model_dim -> b data_dim seg_num model_dim', b=batch)
+        final_out = rearrange(
+            dim_enc,
+            '(b seg_num)  data_dim model_dim -> b data_dim seg_num model_dim',
+            b=batch,
+        )
 
         return final_out

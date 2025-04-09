@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "crossformer"
-version = "2024.0.1"
+version = "2025.0.1"
 dependencies = [
   "torch",
-  "pytorch_lightning",
+  "lightning",
   "einops",
   "pandas",
 ]
@@ -19,7 +19,7 @@ maintainers = [
   {name = "Dr. Peipei Wu", email = "peipeiwu@gmail.com"},
 ]
 description = "Crossfomrer for multivariate time series data analysis!"
-readme = "README.MD"
+readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["Deep Learning", "Transformer", "Multivariate Time-series Data Analysis", ]
 classifiers = [
@@ -29,3 +29,7 @@ classifiers = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+
+[tool.pyink]
+line-length = 80
+skip-string-normalization = true

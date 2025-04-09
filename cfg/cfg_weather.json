@@ -1,6 +1,6 @@
 {
     "data_dim": 5,
-    "in_len": 24,
+    "in_len": 48,
     "out_len": 24,
     "seg_len": 2,
     "window_size": 4,
@@ -11,17 +11,22 @@
     "layer_num": 3,
     "dropout": 0.2,
     "baseline": false,
-    "learning_rate": 0.0001,
+    "learning_rate": 0.1,
     "batch_size": 8,
-    "csv_path": "broker.csv",
-    "size": [24, 24],
-    "split": [0.7,0.2,0.1],
+    "csv_path": "data/weather/broker_values.csv",
+    "split": [
+        0.7,
+        0.2,
+        0.1
+    ],
     "seed": 2024,
     "accelerator": "auto",
     "min_epochs": 10,
     "max_epochs": 200,
     "precision": 32,
-    "patience": 15,
-    "save_path": "./results",
-    "filename": "best_model"
+    "patience": 5,
+    "num_workers": 31,
+    "tracking_uri": "http://localhost:5000",
+    "registry_uri": "http://localhost:5000",
+    "experiment_name": "weather"
 }
