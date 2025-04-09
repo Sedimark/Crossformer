@@ -29,6 +29,10 @@ jobs:
 
             - name: Run tests
               run: |
+                  echo "Current Path:"
+                  pwd
+                  echo "List of files:"
+                  ls
                   pytest -v tests/
 
     publish:
