@@ -58,3 +58,7 @@ logs/
 .pytype/
 ./pylint.d/
 .cache/
+
+# data
+data/
+
