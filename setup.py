@@ -22,7 +22,7 @@ setup(
     install_requires=["torch", "lightning", "einops", "pandas"],
     extras_require={
         "dev": [
-            "mlflow",
+            "pytest",
         ],
     },
     include_package_data=True,
