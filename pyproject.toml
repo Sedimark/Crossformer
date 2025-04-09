@@ -10,7 +10,6 @@ dependencies = [
   "lightning",
   "einops",
   "pandas",
-  "mlflow"
 ]
 requires-python = ">=3.8"
 authors = [
