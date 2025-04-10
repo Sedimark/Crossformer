@@ -15,7 +15,7 @@ setup(
     ),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: European Union Public License 1.2 (EUPL 1.2)",
+        # "License :: OSI Approved :: European Union Public License 1.2 (EUPL 1.2)",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
