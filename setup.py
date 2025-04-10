@@ -9,13 +9,13 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Sedimark/Surrey_AI",
-    license="Apache License 2.0",
+    license="EUPL-1.2",
     packages=find_packages(
         exclude=["tests", "tests.*", "scripts", "scripts.*"]
     ),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache Software License",
+        "License :: OSI Approved :: European Union Public License 1.2 (EUPL 1.2)",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
