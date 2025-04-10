@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="crossformer",
-    version="0.1.0",
+    version="0.0.0",
     author="Dr. Peipei Wu (Paul)",
     author_email="peipeiwu1996@gmail.com",
     description="CrossFormer for multivariate time series forecasting",
