@@ -30,11 +30,10 @@ jobs:
               with:
                   python-version: ${{ matrix.python-version }}
 
-            - name: Get version into setup.py
-              id: get_version
+            - name: Fallback version for CI
+              if: github.ref_type != 'tag'
               run: |
-                VERSION=$(echo "${GITHUB_REF#refs/tags/}")
-                echo "VERSION=$VERSION" >> $GITHUB_ENV
+                    echo "VERSION=0.0.0.dev${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
     
             - name: Update version in setup.py
               run: |
