@@ -11,7 +11,7 @@ setup(
     url="https://github.com/Sedimark/Surrey_AI",
     license="EUPL-1.2",
     packages=find_packages(
-        exclude=["tests", "tests.*", "scripts", "scripts.*"]
+        include=["crossformer", "crossformer.*"],
     ),
     classifiers=[
         "Programming Language :: Python :: 3",

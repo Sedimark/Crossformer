@@ -1,5 +1,6 @@
 include README.md
 include LICENSE
 
-prune scripts
+recursive-include crossformer *.py
+exclude scripts/*
 prune tests
