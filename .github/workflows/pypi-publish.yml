@@ -29,7 +29,8 @@ jobs:
     
             - name: Update version in setup.py
               run: |
-                sed -i "s/version='__VERSION__'/version='${VERSION}'/" setup.py
+                  echo "Using version: $VERSION"
+                  sed -i "s/version=\"__VERSION__\"/version=\"$VERSION\"/" setup.py
 
             - name: Install dependencies
               run: |
@@ -62,7 +63,8 @@ jobs:
 
             - name: Update version in setup.py
               run: |
-                  sed -i "s/version='__VERSION__'/version='${VERSION}'/" setup.py
+                  echo "Using version: $VERSION"
+                  sed -i "s/version=\"__VERSION__\"/version=\"$VERSION\"/" setup.py
 
             - name: Install dependencies
               run: |
