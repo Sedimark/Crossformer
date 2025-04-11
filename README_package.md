@@ -4,7 +4,7 @@
 
 ## What is it?
 
-crossformer is a python package for multivariate time series data forecasting.
+crossformer is a python package for multivariate time series data forecasting. The original idea is from the paper [Crossformer: A Transformer Model for Multivariate Time Series Forecasting](https://openreview.net/forum?id=vSVLM2j9eie). The package is designed to be easy to use and modular, so you can easily extend it to suit your needs. The package is implemented with the [lightning framework](https://pytorch-lightning.readthedocs.io/en/stable/) to reduce the boilerplate code.
 
 ## Key Features
 
