@@ -46,10 +46,10 @@ pip install crossformer
 │   │   ├── metrics.py
 │   │   └── tools.py
 │   └── __init__.py
-├── docs
-│   └── CFG- Manual.md
 ├── scripts (wrap scripts)
 │   ├── debugging.py
+│   └── demo.csv
+│   ├── demo.json
 │   └── main.py
 ├── tests
 │   ├── __init__.py
