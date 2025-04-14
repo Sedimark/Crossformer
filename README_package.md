@@ -25,44 +25,6 @@ To install the package, you can use pip:
 pip install crossformer
 ```
 
-## Project Structure
-```text
-.
-├── crossformer (python package)
-│   ├── data_tools
-│   │   ├── __init__.py
-│   │   └── data_interface.py
-│   ├── model
-│   │   ├── layers
-│   │   │   ├── __init__.py
-│   │   │   ├── attention.py
-│   │   │   ├── decoder.py
-│   │   │   ├── embedding.py
-│   │   │   └── encoder.py
-│   │   ├── __init__.py
-│   │   └── crossformer.py
-│   ├── utils
-│   │   ├── __init__.py
-│   │   ├── metrics.py
-│   │   └── tools.py
-│   └── __init__.py
-├── scripts (wrap scripts)
-│   ├── debugging.py
-│   └── demo.csv
-│   ├── demo.json
-│   └── main.py
-├── tests
-│   ├── __init__.py
-│   └── test_basic.py
-├── LICENSE
-├── MANIFEST.in
-├── README.md
-├── README_package.md
-├── pyproject.toml
-└── setup.py
-```
-The project structure is shown as above. If you want to continue develop on the existing project, you can refer to this package structure.
-
 ## Getting Staterd
 
 This package is designed to be easy to use. Therefore, we implemented with lightning framework to reduce the boilerplate code. The package is designed to be modular, so you can easily extend it to suit your needs. However, there are three key sections that you need to be aware of when using the package. To get started with the package, you can follow the following sections:
@@ -160,54 +122,7 @@ trainer.test(model, datamodule=dm)
 
 ## Additonal Information
 
-We also provide some wrap scripts for the package usage. In this section, we provide the demo script for easily sage. Please note that the script can be modified and extended according to your needs. 
-
-> Step 1: Install the package and additional dependencies for wrap scripts
-```bash
-pip install crossformer
-pip install mlflow
-```
-We will use MLFlow for the experiment tracking. If you are not familiar with MLFlow, please check the [MLFlow documentation](https://www.mlflow.org/docs/latest/index.html) for more information. You can also use other tools for the experiment tracking, but you need to modify the script or pass the corresponding Logger to the trainer.
-
-> Step 2: Prepare the data and configuration file
-
-We put the data and configuration files for the demo under the path `./scripts/`. You can modify the data and configuration files according to your needs. Noted that the configuration file follows the above structure.
-
-> Step 3: Run the script
-
-First, we need to run the MLFlow server. You can run the following command in the terminal to start the MLFlow server:
-```bash
-python mlflow ui
-```
-Then, you can run the wrap script to start the training and evaluation on the demo settings. 
-```bash
-python scripts/main.py
-```
-You can also track the training via MLFlow UI. The MLFlow UI will be available at [http://localhost:5000](http://localhost:5000). You can check the training and evaluation results in the UI as well.
-
-> Step 4: Extension
-
-We also capsulate the training and inference features into a signle core function inside of the wrap script.
-```python
-core(
-    df: pd.DataFrame,
-    cfg: dict,
-    flag: str = "fit",
-):
-    """Core function for the AI asset.
-
-    Args:
-        df (pd.DataFrame): The input data.
-        cfg (dict): The configuration dictionary.
-        flag (str): The flag for the function, either 'fit' or 'predict', which
-            defaults to "fit".
-
-    Returns:
-       test_result (List): trained model's result on test set if flag 'fit'.
-       predict_result (torch.tensor): predictions if flag 'predict'.
-    """
-```
-If you want to use the core features for your own data without heavly modifications, you can follow this helpful interface.
+We also provide some wrap scripts for the package usage. If you are interested on this, please refer to the [GitHub repository](https://github.com/Sedimark/Surrey_AI) for more information.
 
 ## Acknowledgement
 

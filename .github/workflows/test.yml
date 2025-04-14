@@ -1,0 +1,57 @@
+name: Continuous Integration - Development Branches
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+            - feature/*
+    pull_request:
+        branches:
+            - main
+            - dev
+
+jobs:
+    test:
+        runs-on: ubuntu-22.04
+        strategy:
+            matrix:
+                python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        
+
+        
+        name: Test on Python ${{ matrix.python-version }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v4
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Fallback version for CI
+              if: github.ref_type != 'tag'
+              run: |
+                    echo "VERSION=0.0.0.dev${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+    
+            - name: Update version in setup.py
+              run: |
+                  echo "Using version: $VERSION"
+                  sed -i "s/version=\"__VERSION__\"/version=\"$VERSION\"/" setup.py
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install build twine
+                  pip install -e .[dev]
+
+            - name: Run tests
+              run: |
+                  pytest -v tests/
+
+            - name: Check packaging (dry-run)
+              run: |
+                  pip install build twine
+                  python -m build
+                  twine check dist/*

@@ -1,0 +1,6 @@
+include README_package.md
+include LICENSE
+
+recursive-include crossformer *.py
+exclude scripts/*
+prune tests

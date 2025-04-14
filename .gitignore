@@ -28,7 +28,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual environments
 venv/
@@ -58,3 +57,9 @@ logs/
 .pytype/
 ./pylint.d/
 .cache/
+
+# # data
+# data/
+
+# # cfg
+# cfg/

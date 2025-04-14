@@ -44,23 +44,23 @@ def core(
 
     # mlflow settings
     # TODO: clean for automation
-    mlflow.set_tracking_uri(cfg['tracking_uri'])
-    mlflow.set_registry_uri(cfg['registry_uri'])
-    mlflow.set_experiment(cfg['experiment_name'])
+    mlflow.set_tracking_uri(cfg["tracking_uri"])
+    mlflow.set_registry_uri(cfg["registry_uri"])
+    mlflow.set_experiment(cfg["experiment_name"])
 
-    if flag == 'fit':
+    if flag == "fit":
         # callbacks
         model_ckpt = ModelCheckpoint(
-            monitor='val_SCORE',
-            mode='min',
+            monitor="val_SCORE",
+            mode="min",
             save_top_k=1,
             save_weights_only=False,
         )
 
         early_stop = EarlyStopping(
-            monitor='val_SCORE',
+            monitor="val_SCORE",
             patience=cfg["patience"],
-            mode='min',
+            mode="min",
         )
 
         # trainer
@@ -79,12 +79,12 @@ def core(
         data = DataInterface(df, **cfg)
 
         # signature
-        input_example = torch.randn(1, cfg['in_len'], cfg['data_dim'])
+        input_example = torch.randn(1, cfg["in_len"], cfg["data_dim"])
         output_example = model(input_example)
         signature = infer_signature(
             input_example.numpy(), output_example.detach().numpy()
         )
-        mlflow.pytorch.autolog(checkpoint_monitor='val_SCORE', silent=True)
+        mlflow.pytorch.autolog(checkpoint_monitor="val_SCORE", silent=True)
         with mlflow.start_run() as run:
             trainer.fit(model, data)
             mlflow.pytorch.log_model(
@@ -97,7 +97,7 @@ def core(
         test_result = trainer.test(model, data, ckpt_path="best")
         return test_result
 
-    elif flag == 'predict':
+    elif flag == "predict":
         model = mlflow.pytorch.load_model(
             f"models:/{cfg['experiment_name']}_best_model/latest"
         )  # TODO: specify model later
@@ -136,4 +136,4 @@ def main(json_path, flag="fit"):
 
 if __name__ == "__main__":
 
-    main(json_path="cfg_weather.json", flag="fit")
+    main(json_path="demo.json", flag="fit")
