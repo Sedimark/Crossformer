@@ -66,15 +66,6 @@ def get_model_size_parameters(model: nn.Module) -> Tuple[int, float]:
 
     return num_params, model_size_mb
 
-def get_cpu_usage():
-    """Returns the current CPU utilization percentage."""
-    return psutil.cpu_percent(interval=1)  # 1-second sampling interval
-
-def get_memory_usage():
-    """Returns the current memory usage in MB."""
-    mem_info = psutil.virtual_memory()
-    return mem_info.used / (1024 ** 2)  # Convert bytes to MB
-
 def get_model_sparsity(model: nn.Module) -> float:
     """
     Calculate the sparsity of the given model.
