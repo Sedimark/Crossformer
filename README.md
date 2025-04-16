@@ -41,9 +41,15 @@ pip install crossformer
 │   │   │   └── encoder.py
 │   │   ├── __init__.py
 │   │   └── crossformer.py
+|   ├── prune_model
+│   │   ├── __init__.py
+│   │   ├── channel_prune.py
+│   │   ├── prune_model.py
+│   │   ├── unstructured_prune.py
 │   ├── utils
 │   │   ├── __init__.py
 │   │   ├── metrics.py
+│   │   ├── model_profiling.py
 │   │   └── tools.py
 │   └── __init__.py
 ├── scripts (wrap scripts)
@@ -54,6 +60,14 @@ pip install crossformer
 ├── tests
 │   ├── __init__.py
 │   └── test_basic.py
+├── scripts_prune (wrap scripts)
+│   ├── debugging.py
+│   └── demo.csv
+│   ├── demo.json
+│   └── main_prune.py
+├── tests_prune
+│   ├── __init__.py
+│   └── test_prune_basic.py
 ├── LICENSE
 ├── MANIFEST.in
 ├── README.md

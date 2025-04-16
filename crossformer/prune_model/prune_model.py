@@ -1,5 +1,6 @@
 import torch
 import mlflow
+from crossformer.model.crossformer import CrossFormer
 from crossformer.prune_model.channel_prune import channel_prune
 from crossformer.prune_model.unstructured_prune import FineGrainedPruner, get_pruning_ratios
 from crossformer.utils.model_profiling import ( 
@@ -16,27 +17,31 @@ KiB = 1024 * Byte
 MiB = 1024 * KiB
 GiB = 1024 * MiB
 
-def prune_model(model_path: str, cfg: dict) -> tuple:
+def prune_model(cfg: dict) -> tuple:
     """
     Load a model from path, apply pruning, and save the pruned model.
     Returns the new configuration and path to the pruned model.
     
-    :param model_path: Path to the model file # TODO: change to ONNX path
     :param cfg: Configuration dictionary
     :return: Tuple containing the updated configuration and pruned model path
     """
-    print(cfg['experiment_name'])
-    print(f"models:/{model_path}")
 
+    # Load main unpruned model from pth file path mentioned in cfg
+    print(cfg['model_path'])
+    model = CrossFormer(cfg=cfg)
+    # Load the state dict from the .pth file
+    model = torch.load(cfg['model_path'], map_location=torch.device('cpu'))
+
+    # Load main unpruned model from mlflow
+    #print(cfg['experiment_name'])
+    #print(f"models:/{model_path}")
     # Load the model from MLflow
-    model = mlflow.pytorch.load_model(
-        f"models:/{model_path}"
-    )  # TODO: specify model later
+    #model = mlflow.pytorch.load_model(
+    #    f"models:/{model_path}"
+    #)
+    #state_dict = model.state_dict()
+    #model.load_state_dict(state_dict)
     
-    #model = mlflow.pytorch.load_model(f"models:/{cfg['experiment_name']}_best_model/latest")
-    state_dict = model.state_dict()
-    model.load_state_dict(state_dict)
-
     # Compute initial model size and parameters
     model_size = get_model_size(model)
     model_parameters = get_num_parameters(model)
@@ -93,4 +98,3 @@ def prune_model(model_path: str, cfg: dict) -> tuple:
 
     # Return updated configuration and model path
     return pruned_cfg, f"{cfg['experiment_name']}_pruned_untrained/latest"
-    
