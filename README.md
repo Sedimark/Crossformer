@@ -4,7 +4,15 @@
 
 ## What is it?
 
-crossformer is a python package for multivariate time series data forecasting. The original idea is from the paper [Crossformer: A Transformer Model for Multivariate Time Series Forecasting](https://openreview.net/forum?id=vSVLM2j9eie). The package is designed to be easy to use and modular, so you can easily extend it to suit your needs. The package is implemented with the [lightning framework](https://pytorch-lightning.readthedocs.io/en/stable/) to reduce the boilerplate code.
+CrossFormer-Pruned is a lightweight Python package for multivariate time series forecasting. It is a pruned and optimized version of the original [Crossformer](https://pypi.org/project/crossformer/) model, designed to reduce computational overhead while preserving core forecasting performance.
+This package introduces model pruning techniques (both structured and unstructured) to create a more efficient transformer-based model for time series tasks. Ideal for resource-constrained environments or use cases demanding faster inference.
+
+## What’s New in CrossFormer-Pruned?
+- **Lightweight architecture** via channel and unstructured pruning
+- Reduced parameter count and FLOPs
+- Compatible with original CrossFormer configurations and workflows
+- Built-in support for model profiling
+- Easy-to-extend modular design using [Lightning](https://lightning.ai/)
 
 ## Key Features
 
@@ -93,8 +101,8 @@ cfg = {
     "seg_len": 2,               # segment length
     "window_size": 4,           # window size for segment merge
     "factor": 10,               # scaling factor (reduce the computation)
-    "model_dim": 256,           # the hiden model dimension
-    "feedforward_dim": 512,     # feedforward dimension
+    "model_dim": 256,           # the hiden model dimension,pruned model dimension 176
+    "feedforward_dim": 512,     # feedforward dimension,pruned model dimension 352
     "head_num": 4,              # number of attention heads
     "layer_num": 6,             # number of layers
     "dropout": 0.2,             # dropout rate
