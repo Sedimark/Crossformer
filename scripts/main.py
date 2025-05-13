@@ -16,6 +16,7 @@ import torch
 import mlflow.pytorch
 import mlflow.pyfunc
 from mlflow.models.signature import infer_signature
+from crossformer.prune.prune import prune
 
 # from pytorch_lightning.cli import LightningCLI
 
@@ -92,10 +93,21 @@ def core(
                 artifact_path="model",
                 signature=signature,
             )
-        model_uri = f"runs:/{run.info.run_id}/model"
-        mlflow.register_model(model_uri, f"{cfg['experiment_name']}_best_model")
+            if True:  # prune flag
+                model = model.load_from_checkpoint(model_ckpt.best_model_path)
+                pruned_model = prune(model)
+                trainer.fit(pruned_model, data)
+                mlflow.pytorch.log_model(
+                    pytorch_model=pruned_model,
+                    artifact_path="model",
+                    signature=signature,
+                )
+
+        model_uri = f"runs:/{run.info.run_id}/pruned_model"
+        mlflow.register_model(
+            model_uri, f"{cfg['experiment_name']}_pruned_best_model"
+        )
         test_result = trainer.test(model, data, ckpt_path="best")
-        return test_result
 
     elif flag == "predict":
         model = mlflow.pytorch.load_model(

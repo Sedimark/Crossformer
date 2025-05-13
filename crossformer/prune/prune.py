@@ -1,4 +1,3 @@
-import torch
 from crossformer.model.crossformer import CrossFormer
 
 from crossformer.prune.channel_prune import channel_prune
