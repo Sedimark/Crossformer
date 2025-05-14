@@ -28,6 +28,7 @@ def core(
     df: pd.DataFrame,
     cfg: dict,
     flag: str = "fit",
+    PRUNE: bool = True,
 ):
     """Core function for the AI asset.
 
@@ -36,6 +37,8 @@ def core(
         cfg (dict): The configuration dictionary.
         flag (str): The flag for the function, either 'fit' or 'predict', which
             defaults to "fit".
+        PRUNE (bool): The flag for pruning the model, either 'True' or 'False',
+            which defaults to "True".
 
     Returns:
        test_result (List): trained model's result on test set if flag 'fit'.
@@ -110,8 +113,9 @@ def core(
                 mlflow.register_model(
                     model_uri, f"{cfg['experiment_name']}_pruned_best_model"
                 )
-        
+
         test_result = trainer.test(model, data, ckpt_path="best")
+        return test_result
 
     elif flag == "predict":
         model = mlflow.pytorch.load_model(
