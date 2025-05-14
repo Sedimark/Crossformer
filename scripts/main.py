@@ -101,7 +101,9 @@ def core(
                 model_uri, f"{cfg['experiment_name']}_best_model"
             )
             if True:  # prune flag
-                model = model.load_from_checkpoint(model_ckpt.best_model_path)
+                model = mlflow.pytorch.load_model(
+                    f"models:/{cfg['experiment_name']}_best_model/latest"
+                )  # TODO: specify model later
                 pruned_model = prune(model)
                 trainer.fit(pruned_model, data)
                 mlflow.pytorch.log_model(
