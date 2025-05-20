@@ -125,26 +125,29 @@ class Crossformer(nn.Module):
             base = x_seq.mean(dim=1, keepdim=True)
         else:
             base = 0
-        batch_size = x_seq.shape[0]
+
+        residual = x_seq - base
+
+        batch_size = residual.shape[0]
         if self.in_seg_num * self.seg_len != self.in_len:
-            x_seq = torch.cat(
+            residual = torch.cat(
                 (
-                    x_seq[:, :1, :].expand(
+                    residual[:, :1, :].expand(
                         -1, (self.seg_len * self.in_seg_num - self.in_len), -1
                     ),
-                    x_seq,
+                    residual,
                 ),
                 dim=1,
             )
 
-        x_seq = self.enc_embedding(x_seq)
-        x_seq += self.enc_pos
-        x_seq = self.norm(x_seq)
+        residual = self.enc_embedding(residual)
+        residual += self.enc_pos
+        residual = self.norm(residual)
 
-        enc_out = self.encoder(x_seq)
+        enc_out = self.encoder(residual)
         dec_in = repeat(
             self.dec_pos_embedding,
-            'b ts_d l d -> (repeat b) ts_d l d',
+            "b ts_d l d -> (repeat b) ts_d l d",
             repeat=batch_size,
         )
         predict_y = self.decoder(dec_in, enc_out)
@@ -207,7 +210,7 @@ class CrossFormer(LightningModule):
             on_step=False,
             on_epoch=True,
         )
-        return {'loss': loss}
+        return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
         """Validation step.
@@ -227,7 +230,7 @@ class CrossFormer(LightningModule):
         else:
             y_hat = self(x)
         metrics = metric(y_hat, y)
-        metrics = {f'val_{key}': value for key, value in metrics.items()}
+        metrics = {f"val_{key}": value for key, value in metrics.items()}
         self.log_dict(
             metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
@@ -251,7 +254,7 @@ class CrossFormer(LightningModule):
         else:
             y_hat = self(x)
         metrics = metric(y_hat, y)
-        metrics = {f'test_{key}': value for key, value in metrics.items()}
+        metrics = {f"test_{key}": value for key, value in metrics.items()}
         self.log_dict(
             metrics, prog_bar=True, logger=True, on_step=False, on_epoch=True
         )
@@ -288,11 +291,11 @@ class CrossFormer(LightningModule):
             optimizer, lambda epoch: 0.1 ** (epoch // 25)
         )
         return {
-            'optimizer': optimizer,
-            'lr_scheduler': {
-                'scheduler': scheduler,
-                'monitor': 'val_SCORE',
-                'interval': 'epoch',
-                'frequency': 1,
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val_SCORE",
+                "interval": "epoch",
+                "frequency": 1,
             },
         }
