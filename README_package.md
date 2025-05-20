@@ -4,15 +4,7 @@
 
 ## What is it?
 
-CrossFormer-Pruned is a lightweight Python package for multivariate time series forecasting. It is a pruned and optimized version of the original [Crossformer](https://pypi.org/project/crossformer/) model, designed to reduce computational overhead while preserving core forecasting performance.
-This package introduces model pruning techniques (both structured and unstructured) to create a more efficient transformer-based model for time series tasks. Ideal for resource-constrained environments or use cases demanding faster inference.
-
-## What’s New in CrossFormer-Pruned?
-- **Lightweight architecture** via channel and unstructured pruning
-- Reduced parameter count and FLOPs
-- Compatible with original CrossFormer configurations and workflows
-- Built-in support for model profiling
-- Easy-to-extend modular design using [Lightning](https://lightning.ai/)
+crossformer is a python package for multivariate time series data forecasting. The original idea is from the paper [Crossformer: A Transformer Model for Multivariate Time Series Forecasting](https://openreview.net/forum?id=vSVLM2j9eie). The package is designed to be easy to use and modular, so you can easily extend it to suit your needs. The package is implemented with the [lightning framework](https://pytorch-lightning.readthedocs.io/en/stable/) to reduce the boilerplate code.
 
 ## Key Features
 
@@ -33,58 +25,6 @@ To install the package, you can use pip:
 pip install crossformer
 ```
 
-## Project Structure
-```text
-.
-├── crossformer (python package)
-│   ├── data_tools
-│   │   ├── __init__.py
-│   │   └── data_interface.py
-│   ├── model
-│   │   ├── layers
-│   │   │   ├── __init__.py
-│   │   │   ├── attention.py
-│   │   │   ├── decoder.py
-│   │   │   ├── embedding.py
-│   │   │   └── encoder.py
-│   │   ├── __init__.py
-│   │   └── crossformer.py
-|   ├── prune_model
-│   │   ├── __init__.py
-│   │   ├── channel_prune.py
-│   │   ├── prune_model.py
-│   │   ├── unstructured_prune.py
-│   ├── utils
-│   │   ├── __init__.py
-│   │   ├── metrics.py
-│   │   ├── model_profiling.py
-│   │   └── tools.py
-│   └── __init__.py
-├── scripts (wrap scripts)
-│   ├── debugging.py
-│   └── demo.csv
-│   ├── demo.json
-│   └── main.py
-├── tests
-│   ├── __init__.py
-│   └── test_basic.py
-├── scripts_prune (wrap scripts)
-│   ├── debugging.py
-│   └── demo.csv
-│   ├── demo.json
-│   └── main_prune.py
-├── tests_prune
-│   ├── __init__.py
-│   └── test_prune_basic.py
-├── LICENSE
-├── MANIFEST.in
-├── README.md
-├── README_package.md
-├── pyproject.toml
-└── setup.py
-```
-The project structure is shown as above. If you want to continue develop on the existing project, you can refer to this package structure.
-
 ## Getting Staterd
 
 This package is designed to be easy to use. Therefore, we implemented with lightning framework to reduce the boilerplate code. The package is designed to be modular, so you can easily extend it to suit your needs. However, there are three key sections that you need to be aware of when using the package. To get started with the package, you can follow the following sections:
@@ -101,8 +41,8 @@ cfg = {
     "seg_len": 2,               # segment length
     "window_size": 4,           # window size for segment merge
     "factor": 10,               # scaling factor (reduce the computation)
-    "model_dim": 256,           # the hiden model dimension,pruned model dimension 176
-    "feedforward_dim": 512,     # feedforward dimension,pruned model dimension 352
+    "model_dim": 256,           # the hiden model dimension
+    "feedforward_dim": 512,     # feedforward dimension
     "head_num": 4,              # number of attention heads
     "layer_num": 6,             # number of layers
     "dropout": 0.2,             # dropout rate
@@ -182,54 +122,7 @@ trainer.test(model, datamodule=dm)
 
 ## Additonal Information
 
-We also provide some wrap scripts for the package usage. In this section, we provide the demo script for easily sage. Please note that the script can be modified and extended according to your needs. 
-
-> Step 1: Install the package and additional dependencies for wrap scripts
-```bash
-pip install crossformer
-pip install mlflow
-```
-We will use MLFlow for the experiment tracking. If you are not familiar with MLFlow, please check the [MLFlow documentation](https://www.mlflow.org/docs/latest/index.html) for more information. You can also use other tools for the experiment tracking, but you need to modify the script or pass the corresponding Logger to the trainer.
-
-> Step 2: Prepare the data and configuration file
-
-We put the data and configuration files for the demo under the path `./scripts/`. You can modify the data and configuration files according to your needs. Noted that the configuration file follows the above structure.
-
-> Step 3: Run the script
-
-First, we need to run the MLFlow server. You can run the following command in the terminal to start the MLFlow server:
-```bash
-python mlflow ui
-```
-Then, you can run the wrap script to start the training and evaluation on the demo settings. 
-```bash
-python scripts/main.py
-```
-You can also track the training via MLFlow UI. The MLFlow UI will be available at [http://localhost:5000](http://localhost:5000). You can check the training and evaluation results in the UI as well.
-
-> Step 4: Extension
-
-We also capsulate the training and inference features into a signle core function inside of the wrap script.
-```python
-core(
-    df: pd.DataFrame,
-    cfg: dict,
-    flag: str = "fit",
-):
-    """Core function for the AI asset.
-
-    Args:
-        df (pd.DataFrame): The input data.
-        cfg (dict): The configuration dictionary.
-        flag (str): The flag for the function, either 'fit' or 'predict', which
-            defaults to "fit".
-
-    Returns:
-       test_result (List): trained model's result on test set if flag 'fit'.
-       predict_result (torch.tensor): predictions if flag 'predict'.
-    """
-```
-If you want to use the core features for your own data without heavly modifications, you can follow this helpful interface.
+We also provide some wrap scripts for the package usage. If you are interested on this, please refer to the [GitHub repository](https://github.com/Sedimark/Surrey_AI) for more information.
 
 ## Acknowledgement
 
