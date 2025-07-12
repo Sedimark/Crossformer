@@ -63,3 +63,6 @@ logs/
 
 # # cfg
 # cfg/
+
+# model
+*.pt
