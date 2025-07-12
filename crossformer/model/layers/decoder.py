@@ -4,10 +4,11 @@ Author: Peipei Wu (Paul) - Surrey
 Maintainer: Peipei Wu (Paul) - Surrey
 """
 
+import torch
 import torch.nn as nn
-from einops import rearrange
 from crossformer.model.layers.attention import TwoStageAttentionLayer
 from crossformer.model.layers.attention import AttentionLayer
+from typing import List
 
 
 class DecoderLayer(nn.Module):
@@ -23,18 +24,6 @@ class DecoderLayer(nn.Module):
         out_segment_num=10,
         factor=10,
     ):
-        """
-        Initializes the DecoderLayer.
-
-        Args:
-            seg_len: Length of the segment.
-            model_dim: Dimension of the model.
-            heads_num: Number of heads.
-            feedforward_dim: Dimension of the feedforward network.
-            dropout: Dropout rate.
-            out_segment_num: Number of output segments.
-            factor: Factor for the attention layer.
-        """
         super(DecoderLayer, self).__init__()
 
         self.self_attention = TwoStageAttentionLayer(
@@ -63,44 +52,29 @@ class DecoderLayer(nn.Module):
         self.linear_predict = nn.Linear(model_dim, seg_len)
 
     def forward(self, x, memory):
-        """
-        Forward pass for the DecoderLayer.
-
-        Args:
-            x: The output of the last decoder layer.
-               Shape (batch_size, data_dim, seg_num, model_dim).
-            memory: The output of the corresponding encoder layer.
-                    Shape (batch_size, data_dim, seg_num, model_dim).
-
-        Returns:
-            Tuple of decoded output and layer prediction.
-        """
-        batch_size = x.shape[0]
+        batch, data_dim, out_seg_num, model_dim = x.shape
         x = self.self_attention(x)
-        x = rearrange(
-            x,
-            'batch data_dim out_seg_num model_dim -> (batch data_dim) out_seg_num model_dim',  # noqa: E501
+        x = x.contiguous().view(batch * data_dim, out_seg_num, model_dim)
+
+        _, _, in_seg_num, _ = memory.shape
+        memory = memory.contiguous().view(
+            batch * data_dim, in_seg_num, model_dim
         )
 
-        memory = rearrange(
-            memory,
-            'batch data_dim in_seg_num model_dim -> (batch data_dim) in_seg_num model_dim',  # noqa: E501
-        )
         x_decode = self.cross_attention(x, memory, memory)
         x_decode = x + self.dropout(x_decode)
         y = x = self.norm_1(x_decode)
         dec_out = self.norm_2(y + x)
 
-        dec_out = rearrange(
-            dec_out,
-            '(batch data_dim) decode_seg_num model_dim -> batch data_dim decode_seg_num model_dim',  # noqa: E501
-            batch=batch_size,
+        decode_seg_num = dec_out.shape[1]
+        dec_out = dec_out.contiguous().view(
+            batch, data_dim, decode_seg_num, model_dim
         )
+
         layer_predict = self.linear_predict(dec_out)
-        layer_predict = rearrange(
-            layer_predict,
-            'b out_d seg_num seg_len -> b (out_d seg_num) seg_len',
-            b=batch_size,
+        b, out_d, seg_num, seg_len = layer_predict.shape
+        layer_predict = layer_predict.contiguous().view(
+            b, out_d * seg_num, seg_len
         )
 
         return dec_out, layer_predict
@@ -120,19 +94,6 @@ class Decoder(nn.Module):
         out_segment_num=10,
         factor=10,
     ):
-        """
-        Initializes the Decoder.
-
-        Args:
-            seg_len: Length of the segment.
-            model_dim: Dimension of the model.
-            heads_num: Number of heads.
-            depth: Number of decoder layers.
-            feedforward_dim: Dimension of the feedforward network.
-            dropout: Dropout rate.
-            out_segment_num: Number of output segments.
-            factor: Factor for the attention layer.
-        """
         super(Decoder, self).__init__()
 
         self.layers = nn.ModuleList(
@@ -150,19 +111,7 @@ class Decoder(nn.Module):
             ]
         )
 
-    def forward(self, x, memory):
-        """
-        Forward pass for the Decoder.
-
-        Args:
-            x: The output of the encoder.
-               Shape (batch_size, data_dim, seg_num, model_dim).
-            memory: The output of the encoder.
-                    Shape (batch_size, data_dim, seg_num, model_dim).
-
-        Returns:
-            Final prediction.
-        """
+    def forward(self, x, memory: List[torch.Tensor]):
         final_predict = None
         i = 0
 
@@ -177,9 +126,9 @@ class Decoder(nn.Module):
 
             i += 1
 
-        final_predict = rearrange(
-            final_predict,
-            'b (out_d seg_num) seg_len -> b (seg_num seg_len) out_d',
-            out_d=ts_d,
-        )
+        b, total_seg, seg_len = final_predict.shape
+        seg_num = total_seg // ts_d
+        final_predict = final_predict.view(b, ts_d, seg_num, seg_len)
+        final_predict = final_predict.permute(0, 2, 3, 1)
+        final_predict = final_predict.reshape(b, seg_num * seg_len, ts_d)
         return final_predict

@@ -18,7 +18,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
-    install_requires=["torch", "lightning", "einops", "pandas"],
+    install_requires=["torch", "lightning", "pandas"],
     extras_require={
         "dev": [
             "pytest",

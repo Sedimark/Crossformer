@@ -6,6 +6,7 @@ Maintainer: Peipei Wu (Paul) - Surrey
 """
 
 import torch
+import math
 
 
 def scaled_mse(pred, true, scale_factor, epsilon=1e-6):
@@ -185,28 +186,27 @@ def mspe(pred, true):
     return torch.mean(torch.square((pred - true) / true))
 
 
+def sanitize(x: torch.Tensor, default=100.0) -> float:
+    """Ensure metric is a finite float, otherwise replace with default."""
+    val = x.item() if isinstance(x, torch.Tensor) else x
+    return val if math.isfinite(val) else default
+
+
 def metric(pred, true):
-    """Calculates various metrics.
+    """Calculates various metrics, with inf/nan-safe outputs.
 
     Args:
         pred (torch.Tensor): Predicted values.
         true (torch.Tensor): True values.
 
     Returns:
-        dict: Dictionary containing MAE, MSE, RMSE, MAPE, and MSPE values.
+        dict: Dictionary containing safe MAE, MSE, RMSE, MAPE, MSPE, SCORE.
     """
-    score_value = hybrid_loss(pred, true)
-    mae_value = mae(pred, true)
-    mse_value = mse(pred, true)
-    rmse_value = rmse(pred, true)
-    mape_value = mape(pred, true)
-    mspe_value = mspe(pred, true)
-
     return {
-        'MAE': mae_value,
-        'MSE': mse_value,
-        'RMSE': rmse_value,
-        'MAPE': mape_value,
-        'MSPE': mspe_value,
-        'SCORE': score_value,
+        "MAE": sanitize(mae(pred, true)),
+        "MSE": sanitize(mse(pred, true)),
+        "RMSE": sanitize(rmse(pred, true)),
+        "MAPE": sanitize(mape(pred, true)),
+        "MSPE": sanitize(mspe(pred, true)),
+        "SCORE": sanitize(hybrid_loss(pred, true)),
     }

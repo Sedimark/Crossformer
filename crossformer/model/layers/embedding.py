@@ -5,7 +5,6 @@
 """
 
 import torch.nn as nn
-from einops import rearrange
 
 
 class ValueEmebedding(nn.Module):
@@ -39,18 +38,18 @@ class ValueEmebedding(nn.Module):
             (batch_size, timeseries_dim, num_segments, model_dim).
         """
         batch, ts_len, ts_dim = x.size()
+        seg_num = ts_len // self.seg_len
 
-        x_segment = rearrange(
-            x,
-            'b (seg_num seg_len) d -> (b d seg_num) seg_len',
-            seg_len=self.seg_len,
-        )
+        # (b, t, d) -> (b, seg_num, seg_len, d)
+        x = x.view(batch, seg_num, self.seg_len, ts_dim)
+        # (b, seg_num, seg_len, d) -> (b, d, seg_num, seg_len)
+        x = x.permute(0, 3, 1, 2).contiguous()
+        # (b, d, seg_num, seg_len) -> (b * d * seg_num, seg_len)
+        x_segment = x.view(batch * ts_dim * seg_num, self.seg_len)
+
         x_embed = self.linear(x_segment)
-        x_embed = rearrange(
-            x_embed,
-            '(b d seg_num) model_dim -> b d seg_num model_dim',
-            b=batch,
-            d=ts_dim,
-        )
+
+        # (b * d * seg_num, model_dim) -> (b, d, seg_num, model_dim)
+        x_embed = x_embed.view(batch, ts_dim, seg_num, -1)
 
         return x_embed

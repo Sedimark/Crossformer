@@ -95,6 +95,11 @@ def core(
         model_uri = f"runs:/{run.info.run_id}/model"
         mlflow.register_model(model_uri, f"{cfg['experiment_name']}_best_model")
         test_result = trainer.test(model, data, ckpt_path="best")
+
+        model_jit = torch.jit.script(model)
+        torch.jit.save(model_jit, "crossformer_model.pt")
+        mlflow.log_artifact("crossformer_model.pt")
+
         return test_result
 
     elif flag == "predict":
@@ -136,4 +141,4 @@ def main(json_path, flag="fit"):
 
 if __name__ == "__main__":
 
-    main(json_path="demo.json", flag="fit")
+    main(json_path="scripts/demo.json", flag="fit")
