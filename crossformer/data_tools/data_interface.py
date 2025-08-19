@@ -9,7 +9,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader, Subset
 from lightning.pytorch import LightningDataModule
-from crossformer.utils.tools import scaler
+from crossformer.utils.tools import scaler, Preprocessor, Postprocessor
 
 
 class General_Data(Dataset):
@@ -21,7 +21,7 @@ class General_Data(Dataset):
     for linking annotations and values will be provided in future.
     """
 
-    def __init__(self, df, size=[24, 24], **kwargs):
+    def __init__(self, df, size=[24, 24], preprocessor=None, **kwargs):
         """_initialize the general dataset class
 
         Args:
@@ -38,6 +38,7 @@ class General_Data(Dataset):
         chunk_num = len(self.values) // chunk_size
 
         self.chunks = {}
+        self.preprocessor = preprocessor
         self._prep_chunk(chunk_size, chunk_num)
 
     def _prep_chunk(self, chunk_size, chunk_num, normlization=False):
@@ -46,23 +47,31 @@ class General_Data(Dataset):
         Args:
             chunk_size (int): The chunk size.
             chunk_num (int): The chunk num.
-            normlization (bool, optional): Control normalization.
+            preprocessing (bool, optional): Control normalization.
                                            Defaults to False.
         """
         for i in range(chunk_num):
-            chunk_data = self.values[i * chunk_size : (i + 1) * chunk_size, :]  # noqa: E203, E501
-            if normlization:
-                scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
-            else:
-                scale, base = (
-                    0,
-                    chunk_data[: self.in_len],
-                )  # chunk_data will be processed directly
+            chunk_data = self.values[i * chunk_size : (i + 1) * chunk_size, :]
+            # if normlization:
+            #     scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
+            # else:
+            #     scale, base = (
+            #         0,
+            #         chunk_data[: self.in_len],
+            #     )  # chunk_data will be processed directly
+            if self.preprocessor:
+                self.preprocessor.fit(chunk_data)
+                chunk_data = self.preprocessor.transform(chunk_data)
+
             self.chunks[i] = {
-                'feat_data': base,
-                'scale': scale,
-                'target_data': chunk_data[-self.out_len :],  # noqa: E203
+                'feat_data': chunk_data[: self.in_len],
+                'target_data': chunk_data[-self.out_len :],
             }
+            # self.chunks[i] = {
+            #     'feat_data': base,
+            #     'scale': scale,
+            #     'target_data': chunk_data[-self.out_len :],  # noqa: E203
+            # }
 
     def __len__(self):
         """Return the length of dataset.
@@ -102,6 +111,7 @@ class DataInterface(LightningDataModule):
         split=[0.7, 0.2, 0.1],
         batch_size=1,
         num_workers=31,
+        method='zscore',
         **kwargs,
     ) -> None:
         """_summary_
@@ -120,6 +130,7 @@ class DataInterface(LightningDataModule):
         self.size = [in_len, out_len]
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.preprocessor = Preprocessor(method=method, per_feature=True)
 
     def prepare_data(self):
         pass
@@ -127,7 +138,7 @@ class DataInterface(LightningDataModule):
     def setup(self, stage=None):
 
         if stage == 'fit' or stage is None:
-            dataset = General_Data(self.df, size=self.size)
+            dataset = General_Data(self.df, size=self.size, preprocssor=self.preprocessor)
             # based on time
             train_num, test_num = int(dataset.__len__() * self.split[0]), int(
                 dataset.__len__() * self.split[2]

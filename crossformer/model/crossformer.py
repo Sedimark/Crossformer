@@ -125,6 +125,11 @@ class CrossFormer(LightningModule):
         y_hat = (
             self(x) * scale.unsqueeze(1) if scale._is_zerotensor() else self(x)
         )
+
+        # TODO: check how to have y_hat as batch changes
+        (x, y) = batch
+        y_hat = self(x)
+
         loss = self.loss(y_hat, y)
         self.log(
             "train_loss",
