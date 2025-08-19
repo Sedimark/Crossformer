@@ -65,7 +65,23 @@ def scaled_log_cosh(pred, true, scaled_factor, epsilon=1e-6):
     return torch.mean(scaled_log_cosh)
 
 
-def hybrid_loss(pred, true, alpha=0.5):
+def diff_temporal_loss(pred, true):
+    """Computes the temporal difference loss.
+
+    Args:
+        pred (torch.Tensor): Predictions.
+        true (torch.Tensor): Ground truths.
+
+    Returns:
+        torch.Tensor: Temporal difference loss
+    """
+    true_diff = true[:, 1:, :] - true[:, :-1, :]
+    pred_diff = pred[:, 1:, :] - pred[:, :-1, :]
+    diff_loss = torch.mean((true_diff - pred_diff) ** 2)
+    return diff_loss
+
+
+def hybrid_loss(pred, true, alpha=0.3):
     """Computes hybrid loss.
 
     alpha controls the scale & (1 - alpha) controls outlier robustness
@@ -80,10 +96,12 @@ def hybrid_loss(pred, true, alpha=0.5):
     scaled_factor = torch.amax(true, dim=(0, 1)) - torch.amin(true, dim=(0, 1))
     scale_mse = scaled_mse(pred, true, scaled_factor)
     scale_log_cosh = scaled_log_cosh(pred, true, scaled_factor)
-    # return alpha * scale_mse + (1 - alpha) * scale_log_cosh
-    return (scale_mse * scale_mse / (scale_mse + scale_log_cosh)) + (
-        scale_log_cosh * scale_log_cosh / (scale_mse + scale_log_cosh)
-    )
+    diff_temporal = diff_temporal_loss(pred, true)
+
+    # return (scale_mse * scale_mse / (scale_mse + scale_log_cosh)) + (
+    #     scale_log_cosh * scale_log_cosh / (scale_mse + scale_log_cosh)
+    # )
+    return scale_mse + scale_log_cosh + alpha * diff_temporal
 
 
 def rse(pred, true):

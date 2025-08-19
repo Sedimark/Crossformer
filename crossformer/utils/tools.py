@@ -26,16 +26,27 @@ def scaler(data: np.array):
 
 
 model_ckpt = ModelCheckpoint(
-    dirpath='mlruns/models',
+    dirpath="mlruns/models",
     # filename='best_model',  # '{epoch}-{val_loss:.2f}',
-    monitor='val_SCORE_epoch',
-    mode='min',
+    monitor="val_SCORE_epoch",
+    mode="min",
     save_top_k=1,
     save_weights_only=False,
 )
 
 early_stop = EarlyStopping(
-    monitor='val_SCORE_epoch',
+    monitor="val_SCORE_epoch",
     patience=20,
-    mode='min',
+    mode="min",
 )
+
+
+def diff_temporal(x):
+    """
+    Description: Calculate the difference between adjacent elements in a tensor.
+    Args:
+        x: torch.Tensor, input tensor
+    Returns:
+        torch.Tensor, tensor with differences
+    """
+    return x[:, 1:, :] - x[:, :-1, :]
