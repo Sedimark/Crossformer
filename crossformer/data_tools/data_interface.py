@@ -52,13 +52,6 @@ class General_Data(Dataset):
         """
         for i in range(chunk_num):
             chunk_data = self.values[i * chunk_size : (i + 1) * chunk_size, :]
-            # if normlization:
-            #     scale, base = scaler(chunk_data[: self.in_len])  # noqa: E203
-            # else:
-            #     scale, base = (
-            #         0,
-            #         chunk_data[: self.in_len],
-            #     )  # chunk_data will be processed directly
             if self.preprocessor:
                 self.preprocessor.fit(chunk_data)
                 chunk_data = self.preprocessor.transform(chunk_data)
@@ -67,11 +60,6 @@ class General_Data(Dataset):
                 'feat_data': chunk_data[: self.in_len],
                 'target_data': chunk_data[-self.out_len :],
             }
-            # self.chunks[i] = {
-            #     'feat_data': base,
-            #     'scale': scale,
-            #     'target_data': chunk_data[-self.out_len :],  # noqa: E203
-            # }
 
     def __len__(self):
         """Return the length of dataset.
@@ -92,7 +80,6 @@ class General_Data(Dataset):
         """
         return (
             torch.tensor(self.chunks[idx]['feat_data'], dtype=torch.float32),
-            torch.tensor(self.chunks[idx]['scale'], dtype=torch.float32),
             torch.tensor(self.chunks[idx]['target_data'], dtype=torch.float32),
         )
 
@@ -138,7 +125,7 @@ class DataInterface(LightningDataModule):
     def setup(self, stage=None):
 
         if stage == 'fit' or stage is None:
-            dataset = General_Data(self.df, size=self.size, preprocssor=self.preprocessor)
+            dataset = General_Data(self.df, size=self.size, preprocessor=self.preprocessor)
             # based on time
             train_num, test_num = int(dataset.__len__() * self.split[0]), int(
                 dataset.__len__() * self.split[2]
@@ -184,8 +171,8 @@ class DataInterface(LightningDataModule):
 
 # if __name__ == "__main__":
 #     import pandas as pd
-#     df = pd.read_csv('././all_weather_values.csv')
-#     data = DataInterface(df, size=[2, 2], batch_size=1)
+#     df = pd.read_csv('scripts/demo.csv')
+#     data = DataInterface(df, size=[2, 2], batch_size=1, num_workers=1)
 #     data.setup()
 #     train_loader = data.train_dataloader()
 #     for i, batch in enumerate(train_loader):
