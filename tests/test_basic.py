@@ -8,31 +8,33 @@ from crossformer.data_tools.data_interface import DataInterface
 
 sample_cfg = {
     "data_dim": 8,
-    "in_len": 12,
-    "out_len": 12,
+    "in_len": 96,
+    "out_len": 24,
     "seg_len": 2,
     "window_size": 4,
     "factor": 10,
     "model_dim": 256,
     "feedforward_dim": 512,
     "head_num": 4,
-    "layer_num": 6,
+    "layer_num": 2,
     "dropout": 0.2,
     "baseline": False,
     "learning_rate": 0.1,
-    "batch_size": 2,
-    "csv_path": "data/air/values.csv",
+    "batch_size": 32,
+    "csv_path": "scripts/demo.csv",
     "split": [0.7, 0.2, 0.1],
     "seed": 2024,
     "accelerator": "auto",
     "min_epochs": 1,
     "max_epochs": 200,
     "precision": 32,
-    "patience": 5,
-    "num_workers": 2,
+    "patience": 15,
+    "num_workers": 31,
     "tracking_uri": "http://localhost:5000",
     "registry_uri": "http://localhost:5000",
     "experiment_name": "air",
+    "method": "minmax",
+    "per_feature": True,
 }
 
 sample_df = pd.DataFrame(np.random.rand(400, 8))
@@ -56,8 +58,8 @@ def test_data():
     for first_batch in first_batches:
         assert first_batch is not None, "DataLoader returned empty batch"
         assert (
-            len(first_batch) == 3
-        ), "DataLoader batch should contain three elements"
+            len(first_batch) == 2
+        ), "DataLoader batch should contain two elements"
 
 
 def test_model():
