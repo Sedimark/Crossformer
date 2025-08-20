@@ -41,7 +41,7 @@ class General_Data(Dataset):
         self.preprocessor = preprocessor
         self._prep_chunk(chunk_size, chunk_num)
 
-    def _prep_chunk(self, chunk_size, chunk_num, normlization=False):
+    def _prep_chunk(self, chunk_size, chunk_num):
         """Split chunks.
 
         Args:
@@ -99,6 +99,7 @@ class DataInterface(LightningDataModule):
         batch_size=1,
         num_workers=31,
         method="minmax",
+        per_feature=True,
         **kwargs,
     ) -> None:
         """_summary_
@@ -117,7 +118,7 @@ class DataInterface(LightningDataModule):
         self.size = [in_len, out_len]
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.preprocessor = Preprocessor(method=method, per_feature=True)
+        self.preprocessor = Preprocessor(method=method, per_feature=per_feature)
 
     def prepare_data(self):
         pass
