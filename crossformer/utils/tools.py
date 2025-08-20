@@ -51,7 +51,9 @@ def diff_temporal(x):
     """
     return x[:, 1:, :] - x[:, :-1, :]
 
+
 class Preprocessor:
+
     def __init__(self, method="zscore", per_feature=True):
         self.method = method
         self.per_feature = per_feature
@@ -88,14 +90,16 @@ class Preprocessor:
             np.ndarray: transformed data
         """
         if not self.fitted:
-            raise RuntimeError("Preprocessor must be fitted before transformation.")
+            raise RuntimeError(
+                "Preprocessor must be fitted before transformation."
+            )
         if self.method == "zscore":
             return (x - self.params["mean"]) / self.params["std"]
         elif self.method == "minmax":
             return (x - self.params["min"]) / self.params["std"]
         else:
             raise ValueError("Unsupported normalization method.")
-        
+
     def export(self):
         """Export the preprocessor parameters
 
@@ -107,7 +111,7 @@ class Preprocessor:
             "per_feature": self.per_feature,
             "params": self.params,
         }
-    
+
     @staticmethod
     def from_stats(stats: dict):
         """Create a Preprocessor from exported stats
@@ -118,18 +122,22 @@ class Preprocessor:
         Returns:
             Preprocessor: instance of Preprocessor
         """
-        obj = Preprocessor(method=stats["method"], per_feature=stats["per_feature"])
+        obj = Preprocessor(
+            method=stats["method"], per_feature=stats["per_feature"]
+        )
         obj.params = stats["params"]
         obj.fitted = True
         return obj
-    
+
+
 class Postprocessor:
+
     def __init__(self, stats):
         self.method = stats["method"]
         self.per_feature = stats["per_feature"]
         self.params = stats["params"]
 
-    def inverse_transform(self, x:np.ndarray)-> np.ndarray:
+    def inverse_transform(self, x: np.ndarray) -> np.ndarray:
         """Inverse transform the data using the fitted preprocessor
 
         Args:

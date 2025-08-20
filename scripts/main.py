@@ -9,6 +9,7 @@ Maintainer: Peipei Wu (Paul) - Surrey
 import json
 from crossformer.data_tools.data_interface import DataInterface
 from crossformer.model.crossformer import CrossFormer
+from crossformer.utils.tools import Preprocessor, Postprocessor
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.pytorch import Trainer
 import pandas as pd
@@ -107,10 +108,17 @@ def core(
             f"models:/{cfg['experiment_name']}_best_model/latest"
         )  # TODO: specify model later
         model.eval()
-        input_tensor = torch.tensor(df.values, dtype=torch.float32).unsqueeze(0)
+        preprocessor = Preprocessor(method="minmax", per_feature=True)
+        df = df.values[: cfg["in_len"], :]
+        preprocessor.fit(df)
+        df = preprocessor.transform(df)
+        stats = preprocessor.export()
+        postprocessor = Postprocessor(stats=stats)
+        input_tensor = torch.tensor(df, dtype=torch.float32).unsqueeze(0)
         with torch.no_grad():
             predictions = model(input_tensor)
         df_predictions = pd.DataFrame(predictions.squeeze(0).numpy())
+        df_predictions = postprocessor.inverse_transform(df_predictions)
         return df_predictions
     else:
         raise TypeError("Please specify the flag as 'fit' or 'predict'")
@@ -132,7 +140,7 @@ def main(json_path, flag="fit"):
         print("Test Result:", result)
     elif flag == "predict":
         result = core(
-            pd.read_csv("data/air/sample_values.csv", header=None),
+            pd.read_csv("scripts/demo.csv", header=None),
             cfg,
             flag=flag,
         )  # load test sample
@@ -141,4 +149,4 @@ def main(json_path, flag="fit"):
 
 if __name__ == "__main__":
 
-    main(json_path="scripts/demo.json", flag="fit")
+    main(json_path="scripts/demo.json", flag="predict")
