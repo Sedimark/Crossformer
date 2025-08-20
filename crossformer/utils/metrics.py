@@ -93,15 +93,17 @@ def hybrid_loss(pred, true, alpha=0.3):
      Returns:
         torch.Tensor: Hybrid loss
     """
-    scaled_factor = torch.amax(true, dim=(0, 1)) - torch.amin(true, dim=(0, 1))
-    scale_mse = scaled_mse(pred, true, scaled_factor)
-    scale_log_cosh = scaled_log_cosh(pred, true, scaled_factor)
+    # scaled_factor = torch.amax(true, dim=(0, 1)) - torch.amin(true, dim=(0, 1))
+    # scale_mse = scaled_mse(pred, true, scaled_factor)
+    # scale_log_cosh = scaled_log_cosh(pred, true, scaled_factor)
     diff_temporal = diff_temporal_loss(pred, true)
 
     # return (scale_mse * scale_mse / (scale_mse + scale_log_cosh)) + (
     #     scale_log_cosh * scale_log_cosh / (scale_mse + scale_log_cosh)
     # )
-    return scale_mse + scale_log_cosh + alpha * diff_temporal
+    return (
+        torch.mean((pred - true) ** 2) + alpha * diff_temporal
+    )  # scale_mse + scale_log_cosh + alpha * diff_temporal
 
 
 def rse(pred, true):
@@ -188,7 +190,7 @@ def mape(pred, true):
     Returns:
         torch.Tensor: MAPE value.
     """
-    return torch.mean(torch.abs((pred - true) / true))
+    return torch.mean(torch.abs((pred - true) / (true + 1e-6)))
 
 
 def mspe(pred, true):
@@ -201,10 +203,10 @@ def mspe(pred, true):
     Returns:
         torch.Tensor: MSPE value.
     """
-    return torch.mean(torch.square((pred - true) / true))
+    return torch.mean(torch.square((pred - true) / (true + 1e-6)))
 
 
-def sanitize(x: torch.Tensor, default=100.0) -> float:
+def sanitize(x: torch.Tensor, default=200.0) -> float:
     """Ensure metric is a finite float, otherwise replace with default."""
     val = x.item() if isinstance(x, torch.Tensor) else x
     return val if math.isfinite(val) else default
@@ -226,5 +228,6 @@ def metric(pred, true):
         "RMSE": sanitize(rmse(pred, true)),
         "MAPE": sanitize(mape(pred, true)),
         "MSPE": sanitize(mspe(pred, true)),
+        "DIFF_TEMPORAL": sanitize(diff_temporal_loss(pred, true)),
         "SCORE": sanitize(hybrid_loss(pred, true)),
     }

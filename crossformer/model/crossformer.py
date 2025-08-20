@@ -121,15 +121,8 @@ class CrossFormer(LightningModule):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        (x, scale, y) = batch
-        y_hat = (
-            self(x) * scale.unsqueeze(1) if scale._is_zerotensor() else self(x)
-        )
-
-        # TODO: check how to have y_hat as batch changes
         (x, y) = batch
         y_hat = self(x)
-
         loss = self.loss(y_hat, y)
         self.log(
             "train_loss",
@@ -142,10 +135,8 @@ class CrossFormer(LightningModule):
         return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
-        (x, scale, y) = batch
-        y_hat = (
-            self(x) * scale.unsqueeze(1) if scale._is_zerotensor() else self(x)
-        )
+        (x, y) = batch
+        y_hat = self(x)
         metrics = metric(y_hat, y)
         metrics = {f"val_{key}": value for key, value in metrics.items()}
         self.log_dict(
@@ -154,10 +145,8 @@ class CrossFormer(LightningModule):
         return metrics
 
     def test_step(self, batch, batch_idx):
-        (x, scale, y) = batch
-        y_hat = (
-            self(x) * scale.unsqueeze(1) if scale._is_zerotensor() else self(x)
-        )
+        (x, y) = batch
+        y_hat = self(x)
         metrics = metric(y_hat, y)
         metrics = {f"test_{key}": value for key, value in metrics.items()}
         self.log_dict(
@@ -166,10 +155,8 @@ class CrossFormer(LightningModule):
         return metrics
 
     def predict_step(self, batch, *args, **kwargs):
-        (x, scale, y) = batch
-        y_hat = (
-            self(x) * scale.unsqueeze(1) if scale._is_zerotensor() else self(x)
-        )
+        (x, y) = batch
+        y_hat = self(x)
         return y_hat
 
     def configure_optimizers(self):

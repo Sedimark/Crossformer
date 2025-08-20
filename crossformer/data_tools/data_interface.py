@@ -57,8 +57,8 @@ class General_Data(Dataset):
                 chunk_data = self.preprocessor.transform(chunk_data)
 
             self.chunks[i] = {
-                'feat_data': chunk_data[: self.in_len],
-                'target_data': chunk_data[-self.out_len :],
+                "feat_data": chunk_data[: self.in_len],
+                "target_data": chunk_data[-self.out_len :],
             }
 
     def __len__(self):
@@ -79,8 +79,8 @@ class General_Data(Dataset):
             (torch.tensor): Item's content. (feat_data, scale, ground_truth)
         """
         return (
-            torch.tensor(self.chunks[idx]['feat_data'], dtype=torch.float32),
-            torch.tensor(self.chunks[idx]['target_data'], dtype=torch.float32),
+            torch.tensor(self.chunks[idx]["feat_data"], dtype=torch.float32),
+            torch.tensor(self.chunks[idx]["target_data"], dtype=torch.float32),
         )
 
 
@@ -98,7 +98,7 @@ class DataInterface(LightningDataModule):
         split=[0.7, 0.2, 0.1],
         batch_size=1,
         num_workers=31,
-        method='zscore',
+        method="minmax",
         **kwargs,
     ) -> None:
         """_summary_
@@ -124,8 +124,10 @@ class DataInterface(LightningDataModule):
 
     def setup(self, stage=None):
 
-        if stage == 'fit' or stage is None:
-            dataset = General_Data(self.df, size=self.size, preprocessor=self.preprocessor)
+        if stage == "fit" or stage is None:
+            dataset = General_Data(
+                self.df, size=self.size, preprocessor=self.preprocessor
+            )
             # based on time
             train_num, test_num = int(dataset.__len__() * self.split[0]), int(
                 dataset.__len__() * self.split[2]
@@ -142,7 +144,7 @@ class DataInterface(LightningDataModule):
                 Subset(dataset=dataset, indices=test_index),
             )
 
-        if stage == 'predict':
+        if stage == "predict":
             self.predict = General_Data(self.df, size=self.size)
 
     def train_dataloader(self):
