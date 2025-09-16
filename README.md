@@ -1,6 +1,6 @@
 
 
-# Crossformer
+# Crossformer Edge
 
 ## What is it?
 
