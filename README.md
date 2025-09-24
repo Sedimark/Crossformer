@@ -63,7 +63,7 @@ pip install crossformer
 ```
 The project structure is shown as above. If you want to continue develop on the existing project, you can refer to this package structure.
 
-## Getting Staterd
+## Getting Started
 
 This package is designed to be easy to use. Therefore, we implemented with lightning framework to reduce the boilerplate code. The package is designed to be modular, so you can easily extend it to suit your needs. However, there are three key sections that you need to be aware of when using the package. To get started with the package, you can follow the following sections:
 
