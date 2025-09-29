@@ -4,7 +4,9 @@
 
 ## What is it?
 
-crossformer is a python package for multivariate time series data forecasting. The original idea is from the paper [Crossformer: A Transformer Model for Multivariate Time Series Forecasting](https://openreview.net/forum?id=vSVLM2j9eie). The package is designed to be easy to use and modular, so you can easily extend it to suit your needs. The package is implemented with the [lightning framework](https://pytorch-lightning.readthedocs.io/en/stable/) to reduce the boilerplate code.
+Crossformer is a python package for multivariate time series data forecasting. The original idea is from the paper [Crossformer: A Transformer Model for Multivariate Time Series Forecasting](https://openreview.net/forum?id=vSVLM2j9eie). The package is designed to be easy to use and modular, so you can easily extend it to suit your needs. The package is implemented with the [lightning framework](https://pytorch-lightning.readthedocs.io/en/stable/) to reduce the boilerplate code.
+
+Furthermore, this work has been integrated into the [SEDIMARK](https://sedimark.eu/) project to provide edge AI capabilities for secure and decentralized data marketplaces. First, this work can work inside the [Mage](https://github.com/Sedimark/mage) as a data manipulation feature. Second, this work can be extended to federated learning scenarios with [Shamrock](https://github.com/Sedimark/shamrock). Third, this work can also work outside the SEDIMARK project as a standalone package for time series forecasting and corporate with [InteroperabilityEnabler](https://github.com/Sedimark/InteroperabilityEnabler) to provide a complete solution.
 
 ## Key Features
 
@@ -12,10 +14,14 @@ crossformer is a python package for multivariate time series data forecasting. T
 - Data Processing
 - Model Training & Evaluation
 - Model Inference
+- Time domain sensitive
 
-## Installation
+## Requirements
+The package has been tested with Python 3.7 to 3.12.  
 
-The source code can be found on GitHub at [https://github.com/Sedimark/Surrey_AI](https://github.com/Sedimark/Surrey_AI).
+## Installation or Continuous Development
+
+The source code can be found on GitHub at [https://github.com/Sedimark/Crossformer](https://github.com/Sedimark/Crossformer).
 
 Binary installer for the latest released version is available on PyPI at [https://pypi.org/project/crossformer/](https://pypi.org/project/crossformer/).
 
@@ -24,6 +30,14 @@ To install the package, you can use pip:
 ```bash
 pip install crossformer
 ```
+
+The continuous development is welcome. You can clone the repository and install the package in editable mode:
+
+``` 
+git clone https://github.com/Sedimark/Crossformer.git
+cd Crossformer
+pip install -e .
+``` 
 
 ## Project Structure
 ```text
